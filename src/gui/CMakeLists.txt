@@ -435,6 +435,14 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     )
 endif()
 
+IF(MSVC)
+    add_custom_command(
+      TARGET ${APPLICATION_EXECUTABLE}
+      POST_BUILD COMMAND mt.exe -manifest \"${CMAKE_SOURCE_DIR}/src/gui/application.manifest\" -inputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1 -outputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1
+      COMMENT "Appending manifest custom manifest to ${APPLICATION_EXECUTABLE}."
+    )
+ENDIF()
+
 if(NOT BUILD_OWNCLOUD_OSX_BUNDLE AND NOT WIN32)
     configure_file(${CMAKE_SOURCE_DIR}/mirall.desktop.in
                    ${CMAKE_CURRENT_BINARY_DIR}/${LINUX_APPLICATION_ID}.desktop)
