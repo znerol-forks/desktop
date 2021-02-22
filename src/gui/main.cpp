@@ -51,6 +51,8 @@ void warnSystray()
 
 int main(int argc, char **argv)
 {
+    bool result = SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
+    auto loadResult = LoadLibraryExW(L"C://Windows//System32//kernel32.dll", NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
     Q_INIT_RESOURCE(resources);
     Q_INIT_RESOURCE(theme);
 

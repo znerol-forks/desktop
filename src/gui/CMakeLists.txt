@@ -212,6 +212,8 @@ IF( WIN32 )
     set(client_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     IF(NOT MSVC)
         set(client_manifest ${CMAKE_CURRENT_SOURCE_DIR}/manifest-mingw.rc)
+    ELSE()
+        set(client_manifest ${CMAKE_SOURCE_DIR}/src/gui/application.manifest)
     ENDIF()
 ENDIF()
 
@@ -283,6 +285,8 @@ set_target_properties(nextcloudCore
   AUTORCC ON
   AUTOMOC ON
 )
+
+set_target_properties(nextcloudCore PROPERTIES LINK_FLAGS "/DELAYLOAD:kernel32.dll /DELAYLOAD:winmm.dll")
 
 target_include_directories(nextcloudCore
   PUBLIC
@@ -435,14 +439,6 @@ if(BUILD_OWNCLOUD_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     )
 endif()
 
-IF(MSVC)
-    add_custom_command(
-      TARGET ${APPLICATION_EXECUTABLE}
-      POST_BUILD COMMAND mt.exe -manifest \"${CMAKE_SOURCE_DIR}/src/gui/application.manifest\" -inputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1 -outputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1
-      COMMENT "Appending manifest custom manifest to ${APPLICATION_EXECUTABLE}."
-    )
-ENDIF()
-
 if(NOT BUILD_OWNCLOUD_OSX_BUNDLE AND NOT WIN32)
     configure_file(${CMAKE_SOURCE_DIR}/mirall.desktop.in
                    ${CMAKE_CURRENT_BINARY_DIR}/${LINUX_APPLICATION_ID}.desktop)
@@ -457,4 +453,12 @@ if(NOT BUILD_OWNCLOUD_OSX_BUNDLE AND NOT WIN32)
     if(SharedMimeInfo_FOUND)
         update_xdg_mimetypes( ${DATADIR}/mime/packages )
     endif(SharedMimeInfo_FOUND)
+endif()
+
+if(WIN32 AND MSVC)
+    add_custom_command(
+        TARGET ${APPLICATION_EXECUTABLE}
+        POST_BUILD COMMAND mt.exe -manifest \"${CMAKE_SOURCE_DIR}/src/gui/application.manifest\" -inputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1 -outputresource:\"${BIN_OUTPUT_DIRECTORY}/${APPLICATION_EXECUTABLE}.exe\"\;\#1
+        COMMENT "Appending custom manifest to ${APPLICATION_EXECUTABLE}."
+    )
 endif()
