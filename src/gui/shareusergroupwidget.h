@@ -119,7 +119,7 @@ class ShareUserLine : public QWidget
     Q_OBJECT
 
 public:
-    explicit ShareUserLine(QSharedPointer<Share> Share,
+    explicit ShareUserLine(AccountPtr account, QSharedPointer<Share> Share,
         SharePermissions maxSharingPermissions,
         bool isFile,
         QWidget *parent = nullptr);
@@ -152,6 +152,7 @@ private:
     void customizeStyle();
 
     Ui::ShareUserLine *_ui;
+    AccountPtr _account;
     QSharedPointer<Share> _share;
     bool _isFile;
 

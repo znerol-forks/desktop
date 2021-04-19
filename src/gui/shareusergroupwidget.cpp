@@ -228,7 +228,7 @@ void ShareUserGroupWidget::slotSharesFetched(const QList<QSharedPointer<Share>> 
             _ui->mainOwnerLabel->setText(QString("Shared with you by ").append(share->getOwnerDisplayName()));
         }
 
-        auto *s = new ShareUserLine(share, _maxSharingPermissions, _isFile, _parentScrollArea);
+        auto *s = new ShareUserLine(_account, share, _maxSharingPermissions, _isFile, _parentScrollArea);
         connect(s, &ShareUserLine::resizeRequested, this, &ShareUserGroupWidget::slotAdjustScrollWidgetSize);
         connect(s, &ShareUserLine::visualDeletionDone, this, &ShareUserGroupWidget::getShares);
         s->setBackgroundRole(layout->count() % 2 == 0 ? QPalette::Base : QPalette::AlternateBase);
@@ -413,12 +413,14 @@ void ShareUserGroupWidget::activateShareeLineEdit()
     _ui->shareeLineEdit->setFocus();
 }
 
-ShareUserLine::ShareUserLine(QSharedPointer<Share> share,
+ShareUserLine::ShareUserLine(AccountPtr account,
+    QSharedPointer<Share> share,
     SharePermissions maxSharingPermissions,
     bool isFile,
     QWidget *parent)
     : QWidget(parent)
     , _ui(new Ui::ShareUserLine)
+    , _account(account)
     , _share(share)
     , _isFile(isFile)
 {
@@ -476,10 +478,14 @@ ShareUserLine::ShareUserLine(QSharedPointer<Share> share,
     }
 
     // Adds action to display password widget (check box)
-    _passwordProtectLinkAction = new QAction(tr("Password protect"), this);
-    _passwordProtectLinkAction->setCheckable(true);
-    _passwordProtectLinkAction->setChecked(false);
-    _passwordProtectLinkAction->setEnabled(true);
+    if (_account->capabilities().shareEmailPasswordEnabled() || _account->capabilities().shareEmailPasswordEnforced()) {
+        _passwordProtectLinkAction = new QAction(tr("Password protect"), this);
+        _passwordProtectLinkAction->setCheckable(true);
+        _passwordProtectLinkAction->setChecked(_share->isPasswordSet() || _account->capabilities().shareEmailPasswordEnforced());
+        _passwordProtectLinkAction->setEnabled(!_account->capabilities().shareEmailPasswordEnforced());
+
+        slotPasswordCheckboxChanged();
+    }
 
     menu->addAction(_passwordProtectLinkAction);
     connect(_passwordProtectLinkAction, &QAction::triggered, this, &ShareUserLine::slotPasswordCheckboxChanged);

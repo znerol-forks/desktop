@@ -61,6 +61,7 @@ public:
         const QString &ownerDisplayName,
         const QString &path,
         const ShareType shareType,
+        bool passwordSet = false,
         const Permissions permissions = SharePermissionDefault,
         const QSharedPointer<Sharee> shareWith = QSharedPointer<Sharee>(nullptr));
 
@@ -109,6 +110,19 @@ public:
      */
     void setPermissions(Permissions permissions);
 
+    /*
+     * Set the password
+     *
+     * On success the passwordSet signal is emitted
+     * In case of a server error the serverError signal is emitted.
+     */
+    void setPassword(const QString &password);
+
+    /*
+     * Is the password set?
+     */
+    bool isPasswordSet() const;
+
     /**
      * Deletes a share
      *
@@ -121,6 +135,8 @@ signals:
     void permissionsSet();
     void shareDeleted();
     void serverError(int code, const QString &message);
+    void passwordSet();
+    void passwordSetError(int statusCode, const QString &message);
 
 protected:
     AccountPtr _account;
@@ -129,11 +145,14 @@ protected:
     QString _ownerDisplayName;
     QString _path;
     ShareType _shareType;
+    bool _passwordSet;
     Permissions _permissions;
     QSharedPointer<Sharee> _shareWith;
 
 protected slots:
     void slotOcsError(int statusCode, const QString &message);
+    void slotPasswordSet(const QJsonDocument &, const QVariant &value);
+    void slotSetPasswordError(int statusCode, const QString &message);
 
 private slots:
     void slotDeleted();
@@ -211,19 +230,6 @@ public:
     QString getToken() const;
 
     /*
-     * Set the password
-     *
-     * On success the passwordSet signal is emitted
-     * In case of a server error the serverError signal is emitted.
-     */
-    void setPassword(const QString &password);
-
-    /*
-     * Is the password set?
-     */
-    bool isPasswordSet() const;
-
-    /*
      * Get the expiration date
      */
     QDate getExpireDate() const;
@@ -238,22 +244,17 @@ public:
 
 signals:
     void expireDateSet();
-    void passwordSet();
     void noteSet();
-    void passwordSetError(int statusCode, const QString &message);
     void nameSet();
 
 private slots:
-    void slotPasswordSet(const QJsonDocument &, const QVariant &value);
     void slotNoteSet(const QJsonDocument &, const QVariant &value);
     void slotExpireDateSet(const QJsonDocument &reply, const QVariant &value);
-    void slotSetPasswordError(int statusCode, const QString &message);
     void slotNameSet(const QJsonDocument &, const QVariant &value);
 
 private:
     QString _name;
     QString _token;
-    bool _passwordSet;
     QString _note;
     QDate _expireDate;
     QUrl _url;
