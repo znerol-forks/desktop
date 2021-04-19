@@ -141,10 +141,19 @@ private slots:
     void slotPasswordCheckboxChanged();
     void slotDeleteAnimationFinished();
 
+    void slotPasswordSet();
+    void slotPasswordSetError(int statusCode, const QString &message);
+
+    void slotToggleAnimation(bool start);
+
     void slotShareDeleted();
     void slotPermissionsSet();
 
     void slotAvatarLoaded(QImage avatar);
+
+    void on_lineEdit_password_returnPressed();
+
+    void on_confirmPassword_clicked();
 
 private:
     void displayPermissions();

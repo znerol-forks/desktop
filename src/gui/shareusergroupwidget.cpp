@@ -485,10 +485,15 @@ ShareUserLine::ShareUserLine(AccountPtr account,
         _passwordProtectLinkAction->setEnabled(!_account->capabilities().shareEmailPasswordEnforced());
 
         slotPasswordCheckboxChanged();
+
+        connect(_share.data(), &Share::passwordSet, this, &ShareUserLine::slotPasswordSet);
+        connect(_share.data(), &Share::passwordSetError, this, &ShareUserLine::slotPasswordSetError);
     }
 
     menu->addAction(_passwordProtectLinkAction);
     connect(_passwordProtectLinkAction, &QAction::triggered, this, &ShareUserLine::slotPasswordCheckboxChanged);
+
+    _ui->errorLabel->hide();
 
     _ui->permissionToolButton->setMenu(menu);
     _ui->permissionToolButton->setPopupMode(QToolButton::InstantPopup);
@@ -672,6 +677,22 @@ void ShareUserLine::slotDeleteAnimationFinished()
     connect(this, SIGNAL(destroyed(QObject *)), parentWidget(), SLOT(repaint()));
 }
 
+void ShareUserLine::slotPasswordSet()
+{
+    slotToggleAnimation(false);
+    _ui->lineEdit_password->setEnabled(true);
+}
+
+void ShareUserLine::slotPasswordSetError(int statusCode, const QString &message)
+{
+    slotToggleAnimation(false);
+    _ui->lineEdit_password->setEnabled(true);
+
+    qCWarning(lcSharing) << "Error from server" << statusCode << message;
+    _ui->errorLabel->show();
+    _ui->errorLabel->setText(message);
+}
+
 void ShareUserLine::slotShareDeleted()
 {
     auto *animation = new QPropertyAnimation(this, "maximumHeight", this);
@@ -734,6 +755,30 @@ void ShareUserLine::customizeStyle()
 
     QIcon deleteicon = QIcon::fromTheme(QLatin1String("user-trash"),Theme::createColorAwareIcon(QLatin1String(":/client/theme/delete.svg")));
     _deleteShareButton->setIcon(deleteicon);
+}
+
+void ShareUserLine::slotToggleAnimation(bool start)
+{
+    if (start) {
+        if (!_ui->progressIndicator->isAnimated())
+            _ui->progressIndicator->startAnimation();
+    } else {
+        _ui->progressIndicator->stopAnimation();
+    }
+}
+
+void ShareUserLine::on_lineEdit_password_returnPressed()
+{
+    _ui->lineEdit_password->setEnabled(false);
+    slotToggleAnimation(true);
+    _share->setPassword(_ui->lineEdit_password->text());
+}
+
+void ShareUserLine::on_confirmPassword_clicked()
+{
+    _ui->lineEdit_password->setEnabled(false);
+    slotToggleAnimation(true);
+    _share->setPassword(_ui->lineEdit_password->text());
 }
 
 }
