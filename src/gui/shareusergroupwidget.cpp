@@ -475,6 +475,15 @@ ShareUserLine::ShareUserLine(QSharedPointer<Share> share,
         connect(_permissionDelete, &QAction::triggered, this, &ShareUserLine::slotPermissionsChanged);
     }
 
+    // Adds action to display password widget (check box)
+    _passwordProtectLinkAction = new QAction(tr("Password protect"), this);
+    _passwordProtectLinkAction->setCheckable(true);
+    _passwordProtectLinkAction->setChecked(false);
+    _passwordProtectLinkAction->setEnabled(true);
+
+    menu->addAction(_passwordProtectLinkAction);
+    connect(_passwordProtectLinkAction, &QAction::triggered, this, &ShareUserLine::slotPasswordCheckboxChanged);
+
     _ui->permissionToolButton->setMenu(menu);
     _ui->permissionToolButton->setPopupMode(QToolButton::InstantPopup);
 
@@ -632,6 +641,17 @@ void ShareUserLine::slotPermissionsChanged()
     }
 
     _share->setPermissions(permissions);
+}
+
+void ShareUserLine::slotPasswordCheckboxChanged()
+{
+    if (!_passwordProtectLinkAction->isChecked()) {
+        _ui->lineEdit_password->setText("");
+    }
+
+    _ui->passwordLabel->setVisible(_passwordProtectLinkAction->isChecked());
+    _ui->lineEdit_password->setVisible(_passwordProtectLinkAction->isChecked());
+    _ui->confirmPassword->setVisible(_passwordProtectLinkAction->isChecked());
 }
 
 void ShareUserLine::slotDeleteAnimationFinished()

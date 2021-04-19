@@ -138,6 +138,7 @@ private slots:
     void on_deleteShareButton_clicked();
     void slotPermissionsChanged();
     void slotEditPermissionsChanged();
+    void slotPasswordCheckboxChanged();
     void slotDeleteAnimationFinished();
 
     void slotShareDeleted();
@@ -160,6 +161,7 @@ private:
     QAction *_permissionCreate;
     QAction *_permissionChange;
     QAction *_permissionDelete;
+    QAction *_passwordProtectLinkAction;
 };
 }
 
