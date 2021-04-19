@@ -47,6 +47,10 @@
 
 #include <cstring>
 
+namespace {
+  const QString passwordIsSetPlaceholder = QString("●●●●●●●●");
+}
+
 namespace OCC {
 
 ShareUserGroupWidget::ShareUserGroupWidget(AccountPtr account,
@@ -484,6 +488,10 @@ ShareUserLine::ShareUserLine(AccountPtr account,
         _passwordProtectLinkAction->setChecked(_share->isPasswordSet() || _account->capabilities().shareEmailPasswordEnforced());
         _passwordProtectLinkAction->setEnabled(!_account->capabilities().shareEmailPasswordEnforced());
 
+        if (_share->isPasswordSet()) {
+            _ui->lineEdit_password->setPlaceholderText(passwordIsSetPlaceholder);
+        }
+
         slotPasswordCheckboxChanged();
 
         connect(_share.data(), &Share::passwordSet, this, &ShareUserLine::slotPasswordSet);
@@ -680,7 +688,14 @@ void ShareUserLine::slotDeleteAnimationFinished()
 void ShareUserLine::slotPasswordSet()
 {
     slotToggleAnimation(false);
+    _ui->lineEdit_password->setText("");
     _ui->lineEdit_password->setEnabled(true);
+
+    if (_share->isPasswordSet()) {
+        _ui->lineEdit_password->setPlaceholderText(passwordIsSetPlaceholder);
+    } else {
+        _ui->lineEdit_password->setPlaceholderText("");
+    }
 }
 
 void ShareUserLine::slotPasswordSetError(int statusCode, const QString &message)
@@ -691,6 +706,8 @@ void ShareUserLine::slotPasswordSetError(int statusCode, const QString &message)
     qCWarning(lcSharing) << "Error from server" << statusCode << message;
     _ui->errorLabel->show();
     _ui->errorLabel->setText(message);
+
+    _ui->lineEdit_password->setPlaceholderText("");
 }
 
 void ShareUserLine::slotShareDeleted()
