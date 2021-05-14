@@ -589,6 +589,312 @@ private slots:
         QCOMPARE(counter.nDELETE, 0);
     }
 
+    void testMovePropagationWithCustomRemoteRoot()
+    {
+        const QString remoteSubFolder = "Data";
+        FakeFolder fakeFolder{ FileInfo::Data_A12_B12_C12() };
+        fakeFolder.setLocalModifierRoot(QString(fakeFolder.localPath() + "/" + remoteSubFolder));
+        auto &local = fakeFolder.localModifier();
+        auto &remote = fakeFolder.remoteModifier();
+
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+
+        OperationCounter counter;
+        fakeFolder.setServerOverride(counter.functor());
+
+        // Move
+        {
+            counter.reset();
+            local.rename("A/a1", "A/a1m");
+            remote.rename("Data/B/b1", "Data/B/b1m");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(counter.nGET, 0);
+            QCOMPARE(counter.nPUT, 0);
+            QCOMPARE(counter.nMOVE, 1);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/A/a1m"));
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/B/b1m"));
+            QCOMPARE(completeSpy.findItem("Data/A/a1m")->_file, QStringLiteral("Data/A/a1"));
+            QCOMPARE(completeSpy.findItem("Data/A/a1m")->_renameTarget, QStringLiteral("Data/A/a1m"));
+            QCOMPARE(completeSpy.findItem("Data/B/b1m")->_file, QStringLiteral("Data/B/b1"));
+            QCOMPARE(completeSpy.findItem("Data/B/b1m")->_renameTarget, QStringLiteral("Data/B/b1m"));
+        }
+
+        // Create+Move to subfolder and back
+        {
+            counter.reset();
+            local.mkdir("FolderA/folder");
+            local.insert("FolderA/file");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(counter.nGET, 0);
+            QCOMPARE(counter.nPUT, 1);
+            QCOMPARE(counter.nMOVE, 0);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessful(completeSpy, "Data/FolderA/folder", CSYNC_INSTRUCTION_NEW));
+            QVERIFY(itemSuccessful(completeSpy, "Data/FolderA/file", CSYNC_INSTRUCTION_NEW));
+            QVERIFY(fakeFolder.currentRemoteState().find("Data/FolderA/folder"));
+            QVERIFY(fakeFolder.currentRemoteState().find("Data/FolderA/file"));
+
+            counter.reset();
+            local.rename("FolderA/file", "FolderA/folder/file");
+            ItemCompletedSpy completeSpy1(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(counter.nGET, 0);
+            QCOMPARE(counter.nPUT, 0);
+            QCOMPARE(counter.nMOVE, 1);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessfulMove(completeSpy1, "Data/FolderA/folder/file"));
+            QVERIFY(fakeFolder.currentRemoteState().find("Data/FolderA/folder/file"));
+
+            counter.reset();
+            local.rename("FolderA/folder/file", "FolderA/file");
+            ItemCompletedSpy completeSpy2(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(counter.nGET, 0);
+            QCOMPARE(counter.nPUT, 0);
+            QCOMPARE(counter.nMOVE, 1);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessfulMove(completeSpy2, "Data/FolderA/file"));
+            QVERIFY(fakeFolder.currentRemoteState().find("Data/FolderA/file"));
+        }
+
+        // Touch+Move on same side
+        counter.reset();
+        local.rename("A/a2", "A/a2m");
+        local.setContents("A/a2m", 'A');
+        remote.rename("Data/B/b2", "Data/B/b2m");
+        remote.setContents("Data/B/b2m", 'A');
+        QVERIFY(fakeFolder.syncOnce());
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 1);
+        QCOMPARE(counter.nPUT, 1);
+        QCOMPARE(counter.nMOVE, 0);
+        QCOMPARE(counter.nDELETE, 1);
+        QCOMPARE(remote.find("Data/A/a2m")->contentChar, 'A');
+        QCOMPARE(remote.find("Data/B/b2m")->contentChar, 'A');
+
+        // Touch+Move on opposite sides
+        counter.reset();
+        local.rename("A/a1m", "A/a1m2");
+        remote.setContents("Data/A/a1m", 'B');
+        remote.rename("Data/B/b1m", "Data/B/b1m2");
+        local.setContents("B/b1m", 'B');
+        QVERIFY(fakeFolder.syncOnce());
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 2);
+        QCOMPARE(counter.nPUT, 2);
+        QCOMPARE(counter.nMOVE, 0);
+        QCOMPARE(counter.nDELETE, 0);
+        // All these files existing afterwards is debatable. Should we propagate
+        // the rename in one direction and grab the new contents in the other?
+        // Currently there's no propagation job that would do that, and this does
+        // at least not lose data.
+        QCOMPARE(remote.find("Data/A/a1m")->contentChar, 'B');
+        QCOMPARE(remote.find("Data/B/b1m")->contentChar, 'B');
+        QCOMPARE(remote.find("Data/A/a1m2")->contentChar, 'W');
+        QCOMPARE(remote.find("Data/B/b1m2")->contentChar, 'W');
+
+        // Touch+create on one side, move on the other
+        {
+            counter.reset();
+            local.appendByte("A/a1m");
+            local.insert("A/a1mt");
+            remote.rename("Data/A/a1m", "Data/A/a1mt");
+            remote.appendByte("Data/B/b1m");
+            remote.insert("Data/B/b1mt");
+            local.rename("B/b1m", "B/b1mt");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QVERIFY(expectAndWipeConflict(local, fakeFolder.currentLocalState(), "A/a1mt"));
+            QVERIFY(expectAndWipeConflict(local, fakeFolder.currentLocalState(), "B/b1mt"));
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+            QCOMPARE(counter.nGET, 3);
+            QCOMPARE(counter.nPUT, 1);
+            QCOMPARE(counter.nMOVE, 0);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessful(completeSpy, "Data/A/a1m", CSYNC_INSTRUCTION_NEW));
+            QVERIFY(itemSuccessful(completeSpy, "Data/B/b1m", CSYNC_INSTRUCTION_NEW));
+            QVERIFY(itemConflict(completeSpy, "Data/A/a1mt"));
+            QVERIFY(itemConflict(completeSpy, "Data/B/b1mt"));
+        }
+
+        // Create new on one side, move to new on the other
+        {
+            counter.reset();
+            local.insert("A/a1N", 13);
+            remote.rename("Data/A/a1mt", "Data/A/a1N");
+            remote.insert("Data/B/b1N", 13);
+            local.rename("B/b1mt", "B/b1N");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QVERIFY(expectAndWipeConflict(local, fakeFolder.currentLocalState(), "A/a1N"));
+            QVERIFY(expectAndWipeConflict(local, fakeFolder.currentLocalState(), "B/b1N"));
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+            QCOMPARE(counter.nGET, 2);
+            QCOMPARE(counter.nPUT, 0);
+            QCOMPARE(counter.nMOVE, 0);
+            QCOMPARE(counter.nDELETE, 1);
+            QVERIFY(itemSuccessful(completeSpy, "Data/A/a1mt", CSYNC_INSTRUCTION_REMOVE));
+            QVERIFY(itemSuccessful(completeSpy, "Data/B/b1mt", CSYNC_INSTRUCTION_REMOVE));
+            QVERIFY(itemConflict(completeSpy, "Data/A/a1N"));
+            QVERIFY(itemConflict(completeSpy, "Data/B/b1N"));
+        }
+
+        // Local move, remote move
+        counter.reset();
+        local.rename("C/c1", "C/c1mL");
+        remote.rename("Data/C/c1", "Data/C/c1mR");
+        QVERIFY(fakeFolder.syncOnce());
+        // end up with both files
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 1);
+        QCOMPARE(counter.nPUT, 1);
+        QCOMPARE(counter.nMOVE, 0);
+        QCOMPARE(counter.nDELETE, 0);
+
+        // Rename/rename conflict on a folder
+        counter.reset();
+        remote.rename("Data/C", "Data/CMR");
+        local.rename("C", "CML");
+        QVERIFY(fakeFolder.syncOnce());
+        // End up with both folders
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 3); // 3 files in C
+        QCOMPARE(counter.nPUT, 3);
+        QCOMPARE(counter.nMOVE, 0);
+        QCOMPARE(counter.nDELETE, 0);
+
+        // Folder move
+        {
+            counter.reset();
+            local.rename("A", "AM");
+            remote.rename("Data/B", "Data/BM");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+            QCOMPARE(counter.nGET, 0);
+            QCOMPARE(counter.nPUT, 0);
+            QCOMPARE(counter.nMOVE, 1);
+            QCOMPARE(counter.nDELETE, 0);
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/AM"));
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/BM"));
+            QCOMPARE(completeSpy.findItem("Data/AM")->_file, QStringLiteral("Data/A"));
+            QCOMPARE(completeSpy.findItem("Data/AM")->_renameTarget, QStringLiteral("Data/AM"));
+            QCOMPARE(completeSpy.findItem("Data/BM")->_file, QStringLiteral("Data/B"));
+            QCOMPARE(completeSpy.findItem("Data/BM")->_renameTarget, QStringLiteral("Data/BM"));
+        }
+
+        // Folder move with contents touched on the same side
+        {
+            counter.reset();
+            local.setContents("AM/a2m", 'C');
+            // We must change the modtime for it is likely that it did not change between sync.
+            // (Previous version of the client (<=2.5) would not need this because it was always doing
+            // checksum comparison for all renames. But newer version no longer does it if the file is
+            // renamed because the parent folder is renamed)
+            local.setModTime("AM/a2m", QDateTime::currentDateTimeUtc().addDays(3));
+            local.rename("AM", "A2");
+            remote.setContents("Data/BM/b2m", 'C');
+            remote.rename("Data/BM", "Data/B2");
+            ItemCompletedSpy completeSpy(fakeFolder);
+            QVERIFY(fakeFolder.syncOnce());
+            QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+            QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+            QCOMPARE(counter.nGET, 1);
+            QCOMPARE(counter.nPUT, 1);
+            QCOMPARE(counter.nMOVE, 1);
+            QCOMPARE(counter.nDELETE, 0);
+            QCOMPARE(remote.find("Data/A2/a2m")->contentChar, 'C');
+            QCOMPARE(remote.find("Data/B2/b2m")->contentChar, 'C');
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/A2"));
+            QVERIFY(itemSuccessfulMove(completeSpy, "Data/B2"));
+        }
+
+        // Folder rename with contents touched on the other tree
+        counter.reset();
+        remote.setContents("Data/A2/a2m", 'D');
+        // setContents alone may not produce updated mtime if the test is fast
+        // and since we don't use checksums here, that matters.
+        remote.appendByte("Data/A2/a2m");
+        local.rename("A2", "A3");
+        local.setContents("B2/b2m", 'D');
+        local.appendByte("B2/b2m");
+        remote.rename("Data/B2", "Data/B3");
+        QVERIFY(fakeFolder.syncOnce());
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 1);
+        QCOMPARE(counter.nPUT, 1);
+        QCOMPARE(counter.nMOVE, 1);
+        QCOMPARE(counter.nDELETE, 0);
+        QCOMPARE(remote.find("Data/A3/a2m")->contentChar, 'D');
+        QCOMPARE(remote.find("Data/B3/b2m")->contentChar, 'D');
+
+        // Folder rename with contents touched on both ends
+        counter.reset();
+        remote.setContents("Data/A3/a2m", 'R');
+        remote.appendByte("Data/A3/a2m");
+        local.setContents("A3/a2m", 'L');
+        local.appendByte("A3/a2m");
+        local.appendByte("A3/a2m");
+        local.rename("A3", "A4");
+        remote.setContents("Data/B3/b2m", 'R');
+        remote.appendByte("Data/B3/b2m");
+        local.setContents("B3/b2m", 'L');
+        local.appendByte("B3/b2m");
+        local.appendByte("B3/b2m");
+        remote.rename("Data/B3", "Data/B4");
+        QVERIFY(fakeFolder.syncOnce());
+        auto currentLocal = fakeFolder.currentLocalState();
+        auto conflicts = findConflicts(currentLocal.children["A4"]);
+        QCOMPARE(conflicts.size(), 1);
+        for (const auto& c : conflicts) {
+            QCOMPARE(currentLocal.find(c)->contentChar, 'L');
+            local.remove(c);
+        }
+        conflicts = findConflicts(currentLocal.children["B4"]);
+        QCOMPARE(conflicts.size(), 1);
+        for (const auto& c : conflicts) {
+            QCOMPARE(currentLocal.find(c)->contentChar, 'L');
+            local.remove(c);
+        }
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 2);
+        QCOMPARE(counter.nPUT, 0);
+        QCOMPARE(counter.nMOVE, 1);
+        QCOMPARE(counter.nDELETE, 0);
+        QCOMPARE(remote.find("Data/A4/a2m")->contentChar, 'R');
+        QCOMPARE(remote.find("Data/B4/b2m")->contentChar, 'R');
+
+        // Rename a folder and rename the contents at the same time
+        counter.reset();
+        local.rename("A4/a2m", "A4/a2m2");
+        local.rename("A4", "A5");
+        remote.rename("Data/B4/b2m", "Data/B4/b2m2");
+        remote.rename("Data/B4", "Data/B5");
+        QVERIFY(fakeFolder.syncOnce());
+        QCOMPARE(FileInfo::relativeToParentPath(fakeFolder.currentLocalState(), remoteSubFolder), fakeFolder.currentRemoteState());
+        QCOMPARE(printDbData(fakeFolder.dbState()), printDbData(fakeFolder.currentRemoteState()));
+        QCOMPARE(counter.nGET, 0);
+        QCOMPARE(counter.nPUT, 0);
+        QCOMPARE(counter.nMOVE, 2);
+        QCOMPARE(counter.nDELETE, 0);
+    }
+
     // These renames can be troublesome on windows
     void testRenameCaseOnly()
     {

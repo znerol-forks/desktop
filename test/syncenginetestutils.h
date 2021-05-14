@@ -95,12 +95,19 @@ public:
     void mkdir(const QString &relativePath) override;
     void rename(const QString &from, const QString &to) override;
     void setModTime(const QString &relativePath, const QDateTime &modTime) override;
+
+    void setRootDir(const QString &rootDirPath);
+    QString rootDirPath() const;
 };
 
 class FileInfo : public FileModifier
 {
 public:
     static FileInfo A12_B12_C12_S12();
+    static FileInfo Data_A12_B12_C12();
+
+    // return a new tree relative to a parent folder (move the tree inside a new parent folder)
+    static FileInfo relativeToParentPath(const FileInfo &original, const QString &parentPath);
 
     FileInfo() = default;
     FileInfo(const QString &name) : name{name} { }
@@ -438,6 +445,8 @@ public:
     FakeFolder(const FileInfo &fileTemplate);
 
     void switchToVfs(QSharedPointer<OCC::Vfs> vfs);
+
+    void setLocalModifierRoot(const QString &path);
 
     OCC::AccountPtr account() const { return _account; }
     OCC::SyncEngine &syncEngine() const { return *_syncEngine; }

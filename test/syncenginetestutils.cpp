@@ -99,6 +99,16 @@ void DiskFileModifier::setModTime(const QString &relativePath, const QDateTime &
     OCC::FileSystem::setModTime(_rootDir.filePath(relativePath), OCC::Utility::qDateTimeToTime_t(modTime));
 }
 
+void DiskFileModifier::setRootDir(const QString &rootDirPath)
+{
+    _rootDir = rootDirPath;
+}
+
+QString DiskFileModifier::rootDirPath() const
+{
+    return _rootDir.path();
+}
+
 FileInfo FileInfo::A12_B12_C12_S12()
 {
     FileInfo fi { QString {}, {
@@ -112,6 +122,37 @@ FileInfo FileInfo::A12_B12_C12_S12()
     sharedFolder.children[QStringLiteral("s2")].isShared = true;
     fi.children.insert(sharedFolder.name, std::move(sharedFolder));
     return fi;
+}
+
+FileInfo FileInfo::Data_A12_B12_C12()
+{
+    FileInfo fi { QStringLiteral(), { { QStringLiteral("Data"), { { QStringLiteral("A"), { { QStringLiteral("a1"), 4 }, { QStringLiteral("a2"), 4 } } },
+                                                                  { QStringLiteral("B"), { { QStringLiteral("b1"), 16 }, { QStringLiteral("b2"), 16 } } },
+                                                                  { QStringLiteral("C"), { { QStringLiteral("c1"), 24 }, { QStringLiteral("c2"), 24 } } } }
+                              }}
+                };
+    return fi;
+}
+
+FileInfo FileInfo::relativeToParentPath(const FileInfo &original, const QString &parentPath)
+{
+    if (parentPath.isEmpty() || parentPath == "/" || parentPath == "\\") {
+        return original;
+    }
+
+    FileInfo result = original;
+
+    const QString parentPathCorrected = !parentPath.endsWith("/") ? parentPath + "/" : parentPath;
+
+    if (!result.find(parentPathCorrected)) {
+        result.mkdir(parentPathCorrected);
+    }
+
+    for (const auto &child : original.children) {
+        result.rename(child.path(), parentPathCorrected + child.path());
+    }
+
+    return result;
 }
 
 FileInfo::FileInfo(const QString &name, const std::initializer_list<FileInfo> &children)
@@ -896,9 +937,14 @@ void FakeFolder::switchToVfs(QSharedPointer<OCC::Vfs> vfs)
     vfs->start(vfsParams);
 }
 
+void FakeFolder::setLocalModifierRoot(const QString &path)
+{
+    _localModifier.setRootDir(path);
+}
+
 FileInfo FakeFolder::currentLocalState()
 {
-    QDir rootDir { _tempDir.path() };
+    QDir rootDir { _localModifier.rootDirPath() };
     FileInfo rootTemplate;
     fromDisk(rootDir, rootTemplate);
     rootTemplate.fixupParentPathRecursively();
