@@ -114,10 +114,12 @@ function(ecm_add_app_icon appsources)
     endif()
 
     if(APPLE)
+      message("Ecm apple")
         find_program(KSVG2ICNS NAMES ksvg2icns)
         foreach(icon ${ARG_ICONS})
             get_filename_component(icon_full ${icon} ABSOLUTE)
             get_filename_component(icon_type ${icon_full} EXT)
+            message("Process icon " ${icon} "(" ${icon_full} ") (" ${icon_type} ")")
             # do we have ksvg2icns in the path and did we receive an svg (or compressed svg) icon?
             if(KSVG2ICNS AND (${icon_type} STREQUAL ".svg" OR ${icon_type} STREQUAL ".svgz"))
               message("Convert svg icon " ${icon} "(" ${icon_full} ") to icns")
