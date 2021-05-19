@@ -120,6 +120,7 @@ function(ecm_add_app_icon appsources)
             get_filename_component(icon_type ${icon_full} EXT)
             # do we have ksvg2icns in the path and did we receive an svg (or compressed svg) icon?
             if(KSVG2ICNS AND (${icon_type} STREQUAL ".svg" OR ${icon_type} STREQUAL ".svgz"))
+              message("Convert svg icon " ${icon} "(" ${icon_full} ") to icns")
                 # convert the svg icon to an icon resource
                 execute_process(COMMAND ${KSVG2ICNS} "${icon_full}"
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} RESULT_VARIABLE KSVG2ICNS_ERROR)
