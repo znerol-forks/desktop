@@ -312,7 +312,7 @@ void GETFileJob::slotReadyRead()
             _bandwidthQuota -= toRead;
         }
 
-        qint64 r = reply()->read(buffer.data(), toRead);
+        const qint64 r = reply()->read(buffer.data(), toRead);
         if (r < 0) {
             _errorString = networkReplyErrorString(*reply());
             _errorStatus = SyncFileItem::NormalError;
@@ -321,7 +321,7 @@ void GETFileJob::slotReadyRead()
             return;
         }
 
-        qint64 w = writeToDevice(buffer.constData(), r);
+        const qint64 w = writeToDevice(buffer.constData(), r);
         if (w != r) {
             _errorString = _device->errorString();
             _errorStatus = SyncFileItem::NormalError;
@@ -393,10 +393,6 @@ GETEncryptedFileJob::GETEncryptedFileJob(AccountPtr account, const QUrl &url, QI
     _decryptor.reset(new EncryptionHelper::StreamingDecryptor(encryptedInfo.encryptionKey, encryptedInfo.initializationVector, totalSize));
 }
 
-GETEncryptedFileJob::~GETEncryptedFileJob()
-{
-}
-
 qint64 GETEncryptedFileJob::writeToDevice(const char *data, qint64 len)
 {
     if (!_decryptor->isInitialized()) {
@@ -408,15 +404,6 @@ qint64 GETEncryptedFileJob::writeToDevice(const char *data, qint64 len)
     if (bytesDecrypted == -1) {
         qCCritical(lcPropagateDownload) << "Decryption failed!";
         return -1;
-    }
-
-    _writtenSoFar += bytesDecrypted;
-
-    qCCritical(lcPropagateDownload) << "bytesDecrypted" << bytesDecrypted << "len" << len << "_writtenSoFar" << _writtenSoFar;
-
-    if (bytesDecrypted != -1 && _decryptor->isFinished()) {
-        emit decryptionFinishedSignal();
-        deleteLater();
     }
 
     return len;
@@ -474,8 +461,8 @@ void PropagateDownloadFile::startAfterIsEncryptedIsChecked()
 
         if (!_item->_encryptedFileName.isEmpty()) {
             if (_item->_size != 0 && _item->_size == _item->_sizeNonE2EE) {
-                // if we're dehydrating a placeholder, we may need to set it's size back to (actual file size + OCC::CommonConstants::e2EeTagSize)
-                // make sure the server side metadata's tag is of the same size as we are expecting
+                // if we're dehydrating a placeholder, we may need to set it's size back (actual file size + OCC::CommonConstants::e2EeTagSize)
+                // to make sure the server side metadata's tag is of the same size as we are expecting
                 Q_ASSERT(_downloadEncryptedHelper && _downloadEncryptedHelper->authenticationTagSize() == OCC::CommonConstants::e2EeTagSize);
                 if (!_downloadEncryptedHelper || _downloadEncryptedHelper->authenticationTagSize() != OCC::CommonConstants::e2EeTagSize) {
                     qCritical(lcPropagateDownload) << "Downoaded file has incorrect non-encrypted size.";
