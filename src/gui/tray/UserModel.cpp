@@ -476,7 +476,7 @@ void User::slotAddErrorToGui(const QString &folderAlias, SyncFileItem::Status st
         // add 'other errors' to activity list
         _activityModel->addErrorToActivityList(activity);
 
-        showDesktopNotification(activity._subject, activity._message);
+        emit guiLog(activity._subject, activity._message);
 
         if (!_expiredActivitiesCheckTimer.isActive()) {
             _expiredActivitiesCheckTimer.start(expiredActivitiesCheckIntervalMsecs);
