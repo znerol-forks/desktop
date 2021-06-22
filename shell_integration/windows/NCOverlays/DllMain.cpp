@@ -67,27 +67,89 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     std::ofstream outfile;
     outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
     outfile << "DllGetClassObject..." << "\r\n";
-    outfile.close();
  
     hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID)&guid);
-    if (!SUCCEEDED(hResult)) { return hResult; }
-    if (IsEqualCLSID(guid, rclsid)) { return CreateFactory(riid, ppv, State_Error); }
+    if (!SUCCEEDED(hResult)) {
+        OLECHAR *guidString;
+        StringFromCLSID(guid, &guidString);
+
+        // use guidString...
+
+        // ensure memory is freed
+        outfile << "State_Error !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n ";
+        outfile.close();
+
+        ::CoTaskMemFree(guidString);
+        return hResult;
+    }
+    if (IsEqualCLSID(guid, rclsid)) {
+        OLECHAR *guidString;
+        StringFromIID(rclsid, &guidString);
+        outfile << "State_Error IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+        outfile.close();
+        ::CoTaskMemFree(guidString);
+        return CreateFactory(riid, ppv, State_Error);
+    }
 
     hResult = CLSIDFromString(OVERLAY_GUID_OK, (LPCLSID)&guid);
-    if (!SUCCEEDED(hResult)) { return hResult; }
-    if (IsEqualCLSID(guid, rclsid)) { return CreateFactory(riid, ppv, State_OK); }
+    if (!SUCCEEDED(hResult)) {
+        OLECHAR *guidString;
+        StringFromCLSID(guid, &guidString);
+        outfile << "State_OK !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
+        outfile.close();
+        ::CoTaskMemFree(guidString);
+        return hResult;
+    }
+    if (IsEqualCLSID(guid, rclsid)) {
+        OLECHAR *guidString;
+        StringFromIID(rclsid, &guidString);
+        outfile << "State_OK IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+        outfile.close();
+        ::CoTaskMemFree(guidString);
+        return CreateFactory(riid, ppv, State_OK);
+    }
 
     hResult = CLSIDFromString(OVERLAY_GUID_OK_SHARED, (LPCLSID)&guid);
-    if (!SUCCEEDED(hResult)) { return hResult; }
-    if (IsEqualCLSID(guid, rclsid)) { return CreateFactory(riid, ppv, State_OKShared); }
+    if (!SUCCEEDED(hResult)) {
+        OLECHAR *guidString;
+        StringFromCLSID(guid, &guidString);
+        outfile << "State_OKShared !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
+        outfile.close();
+        ::CoTaskMemFree(guidString);
+        return hResult;
+    }
+    if (IsEqualCLSID(guid, rclsid)) {
+        OLECHAR *guidString;
+        StringFromIID(rclsid, &guidString);
+        outfile << "State_OKShared IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+        outfile.close();
+        ::CoTaskMemFree(guidString);
+        return CreateFactory(riid, ppv, State_OKShared);
+    }
 
     hResult = CLSIDFromString(OVERLAY_GUID_SYNC, (LPCLSID)&guid);
-    if (!SUCCEEDED(hResult)) { return hResult; }
-    if (IsEqualCLSID(guid, rclsid)) { return CreateFactory(riid, ppv, State_Sync); }
+    if (!SUCCEEDED(hResult)) {
+        outfile << "State_Sync !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << (LPCLSID)&guid << "\r\n";
+        outfile.close();
+        return hResult;
+    }
+    if (IsEqualCLSID(guid, rclsid)) {
+        outfile << "State_Sync IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << (LPCLSID)&rclsid << "\r\n";
+        outfile.close();
+        return CreateFactory(riid, ppv, State_Sync);
+    }
 
     hResult = CLSIDFromString(OVERLAY_GUID_WARNING, (LPCLSID)&guid);
-    if (!SUCCEEDED(hResult)) { return hResult; }
-    if (IsEqualCLSID(guid, rclsid)) { return CreateFactory(riid, ppv, State_Warning); }
+    if (!SUCCEEDED(hResult)) {
+        outfile << "State_Warning !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << (LPCLSID)&guid << "\r\n";
+        outfile.close();
+        return hResult;
+    }
+    if (IsEqualCLSID(guid, rclsid)) {
+        outfile << "State_Warning IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << (LPCLSID)&rclsid << "\r\n";
+        outfile.close();
+        return CreateFactory(riid, ppv, State_Warning);
+    }
 
     return CLASS_E_CLASSNOTAVAILABLE;
 }
