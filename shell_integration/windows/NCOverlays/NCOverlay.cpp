@@ -51,6 +51,10 @@ NCOverlay::NCOverlay(int state)
     : _referenceCount(1)
     , _state(state)
 {
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlay::NCOverlay state: " << state << "\r\n";
+    outfile.close();
 }
 
 NCOverlay::~NCOverlay(void)
@@ -81,6 +85,11 @@ IFACEMETHODIMP NCOverlay::QueryInterface(REFIID riid, void **ppv)
     {
         AddRef();
     }
+
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlay::QueryInterface ppv: " << ppv << " hr: " << hr << "\r\n";
+    outfile.close();
 
     return hr;
 }
@@ -143,6 +152,10 @@ IFACEMETHODIMP NCOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
     if (!checker->IsMonitoredPath(pwszPath, &state)) {
         return MAKE_HRESULT(S_FALSE, 0, 0);
     }
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlay::IsMemberOf? MAKE_HRESULT " << MAKE_HRESULT(state == _state ? S_OK : S_FALSE, 0, 0) << "\r\n";
+    outfile.close();
     return MAKE_HRESULT(state == _state ? S_OK : S_FALSE, 0, 0);
 }
 
@@ -152,10 +165,26 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
     *pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
     *pIndex = _state;
 
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlay::GetOverlayInfo pwszIconFile: " << pwszIconFile;
+    outfile.close();
+
     if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0) {
         HRESULT hResult = HRESULT_FROM_WIN32(GetLastError());
         wcerr << L"IsOK? " << (hResult == S_OK) << L" with path " << pwszIconFile << L", index " << *pIndex << endl;
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "NCOverlay::GetOverlayInfo IsOK? " << (hResult == S_OK) << L" with path " << pwszIconFile << L", index " << *pIndex << "\r\n";
+        outfile.close();
         return hResult;
+    }
+
+    {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "NCOverlay::GetOverlayInfo false";
+        outfile.close();
     }
 
     return S_OK;

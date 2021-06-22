@@ -14,6 +14,7 @@
 
 #include <windows.h>
 #include <new>
+#include <fstream>
 
 #include "NCOverlayFactory.h"
 #include "NCOverlay.h"
@@ -23,6 +24,10 @@ extern long dllReferenceCount;
 NCOverlayFactory::NCOverlayFactory(int state)
     : _referenceCount(1), _state(state)
 {
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlayFactory..." << "\r\n";
+    outfile.close();
     InterlockedIncrement(&dllReferenceCount);
 }
 
@@ -70,6 +75,11 @@ IFACEMETHODIMP NCOverlayFactory::CreateInstance(
     IUnknown *pUnkOuter, REFIID riid, void **ppv)
 {
     HRESULT hResult = CLASS_E_NOAGGREGATION;
+
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "NCOverlayFactory::CreateInstance..." << "\r\n";
+    outfile.close();
 
     if (pUnkOuter) { return hResult; }
 

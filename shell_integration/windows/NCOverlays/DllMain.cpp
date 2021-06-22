@@ -15,6 +15,7 @@
 #include "NCOverlayRegistrationHandler.h"
 #include "NCOverlayFactory.h"
 #include "WinShellExtConstants.h"
+#include <fstream>
 
 HINSTANCE instanceHandle = nullptr;
 
@@ -22,6 +23,10 @@ long dllReferenceCount = 0;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "DllMain..." << "\r\n";
+    outfile.close();
     switch (dwReason)
     {
         case DLL_PROCESS_ATTACH:
@@ -40,6 +45,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 HRESULT CreateFactory(REFIID riid, void **ppv, int state)
 {
     HRESULT hResult = E_OUTOFMEMORY;
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "CreateFactory..." << "\r\n";
+    outfile.close();
 
     NCOverlayFactory* ncOverlayFactory = new NCOverlayFactory(state);
 
@@ -54,6 +63,11 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 {
     HRESULT hResult = CLASS_E_CLASSNOTAVAILABLE;
     GUID guid;
+
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "DllGetClassObject..." << "\r\n";
+    outfile.close();
  
     hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) { return hResult; }
@@ -85,6 +99,11 @@ STDAPI DllCanUnloadNow(void)
 
 HRESULT RegisterCLSID(LPCOLESTR guidStr, PCWSTR overlayStr, PCWSTR szModule)
 {
+    std::ofstream outfile;
+    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile << "RegisterCLSID..." << "\r\n";
+    outfile.close();
+
     HRESULT hResult = S_OK;
 
     GUID guid;

@@ -24,8 +24,10 @@
 #include <iterator>
 #include <unordered_set>
 #include <cassert>
-
+#include <fstream>
 #include <shlobj.h>
+#include <locale>
+#include <codecvt>
 
 using namespace std;
 
@@ -132,6 +134,16 @@ void RemotePathChecker::workerThreadLoop()
                     updateView = it->second != state;
                     it->second = state;
                 }
+                using convert_type = std::codecvt_utf8<wchar_t>;
+                std::wstring_convert<convert_type, wchar_t> converter;
+
+                //use converter (.to_bytes: wstr->str, .from_bytes: str->wstr)
+
+                std::string converted_str = converter.to_bytes(responsePath);
+                std::ofstream outfile;
+                outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+                outfile << "RemotePathChecker::workerThreadLoop()... updateView: " << updateView << " responsePath: " << converted_str << " state: " << state << "\r\n";
+                outfile.close();
                 if (updateView) {
                     SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH | SHCNF_FLUSHNOWAIT, responsePath.data(), nullptr);
                 }
@@ -139,6 +151,10 @@ void RemotePathChecker::workerThreadLoop()
         }
 
         if (socket.Event() == INVALID_HANDLE_VALUE) {
+            std::ofstream outfile;
+            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+            outfile << "RemotePathChecker::workerThreadLoop()... socket.Event() == INVALID_HANDLE_VALUE" << "\r\n";
+            outfile.close();
             atomic_store(&_watchedDirectories, make_shared<const vector<wstring>>());
             std::unique_lock<std::mutex> lock(_mutex);
             _connected = connected = false;
