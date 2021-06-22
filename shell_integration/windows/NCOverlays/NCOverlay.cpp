@@ -132,18 +132,15 @@ IFACEMETHODIMP NCOverlay::GetPriority(int *pPriority)
 IFACEMETHODIMP NCOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 {
     RemotePathChecker* checker = getGlobalChecker();
+    std::string pwszPathConverted;
     std::shared_ptr<const std::vector<std::wstring>> watchedDirectories = checker->WatchedDirectories();
     {
         using convert_type = std::codecvt_utf8<wchar_t>;
         std::wstring_convert<convert_type, wchar_t> converter;
 
-        std::string converted_str = converter.to_bytes(pwszPath);
-
-        std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
-        outfile << "NCOverlay::IsMemberOf? pwszPath: " << converted_str << "\r\n";
-        outfile.close();
+        pwszPathConverted = converter.to_bytes(pwszPath);
     }
+
     {
         std::string watchedFoldersString;
         size_t pathLength = wcslen(pwszPath);
@@ -161,14 +158,9 @@ IFACEMETHODIMP NCOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
         if (watchedFoldersString.size() > 0) {
             std::ofstream outfile;
             outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
-            outfile << "NCOverlay::IsMemberOf? watched directories are BEGIN:"<< "\r\n";
+            outfile << "NCOverlay::IsMemberOf? watched directories pwszPath: " << pwszPathConverted << " are BEGIN : " << "\r\n ";
             outfile << watchedFoldersString << "\r\n";
             outfile << "NCOverlay::IsMemberOf? watched directories are END"<< "\r\n";
-            outfile.close();
-        } else {
-            std::ofstream outfile;
-            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
-            outfile << "NCOverlay::IsMemberOf? NO FOLDERS TO WATCH!" << "\r\n";
             outfile.close();
         }
     }
