@@ -38,6 +38,10 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     if (!SUCCEEDED(hResult)) {
         hResult = RegCreateKey(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, &shellOverlayKey);
         if(!SUCCEEDED(hResult)) {
+            std::ofstream outfile;
+            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+            outfile << "Failed to MakeRegistryEntries 41"; 
+            outfile.close();
             return hResult;
         }
     }
@@ -46,6 +50,10 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(shellOverlayKey, friendlyName, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &syncExOverlayKey, nullptr));
 
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 50";
+        outfile.close();
         return hResult;
     }
 
@@ -54,6 +62,10 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     LPCTSTR value = stringCLSID;
     hResult = RegSetValueEx(syncExOverlayKey, nullptr, 0, REG_SZ, (LPBYTE)value, (DWORD)((wcslen(value)+1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 59";
+        outfile.close();
         return hResult;
     }
 
@@ -92,12 +104,20 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
 
     hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_CLASSES_ROOT, REGISTRY_CLSID, 0, KEY_WRITE, &hKey));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 96";
+        outfile.close();
         return hResult;
     }
 
     HKEY clsidKey = nullptr;
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 103";
+        outfile.close();
         return hResult;
     }
 
@@ -106,28 +126,48 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     HKEY inprocessKey = nullptr;
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_IN_PROCESS, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &inprocessKey, nullptr));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 111";
+        outfile.close();
         return hResult;
     }
 
     hResult = HRESULT_FROM_WIN32(RegSetValue(inprocessKey, nullptr, REG_SZ, modulePath, (DWORD) wcslen(modulePath)));
 
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 119";
+        outfile.close();
         return hResult;
     }
 
     hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_THREADING, 0, REG_SZ, (LPBYTE)REGISTRY_APARTMENT, (DWORD)((wcslen(REGISTRY_APARTMENT)+1) * sizeof(TCHAR))));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 125";
+        outfile.close();
         return hResult;
     }
 
     HKEY versionKey = nullptr;
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_VERSION, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &versionKey, nullptr));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 132";
+        outfile.close();
         return hResult;
     }
 
     hResult = HRESULT_FROM_WIN32(RegSetValueEx(versionKey, nullptr, 0, REG_SZ, (LPBYTE)REGISTRY_VERSION_NUMBER, (DWORD)(wcslen(REGISTRY_VERSION_NUMBER)+1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
+        std::ofstream outfile;
+        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile << "Failed to MakeRegistryEntries 138";
+        outfile.close();
         return hResult;
     }
 
