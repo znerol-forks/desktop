@@ -3,6 +3,7 @@ add_library(NCOverlays MODULE
     NCOverlay.cpp
     NCOverlayFactory.cpp
     NCOverlayRegistrationHandler.cpp
+	utils.cpp
     NCOverlay.rc
     NCOverlays.def
 )

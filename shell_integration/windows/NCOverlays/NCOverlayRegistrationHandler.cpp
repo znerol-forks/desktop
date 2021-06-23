@@ -18,6 +18,7 @@
 #include <objbase.h>
 #include <iostream>
 #include <fstream>
+#include "utils.h"
 
 #define REGISTRY_OVERLAY_KEY        LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellIconOverlayIdentifiers)"
 #define REGISTRY_CLSID              L"CLSID"
@@ -34,7 +35,7 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     HRESULT hResult;
     HKEY shellOverlayKey = nullptr;
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "Start making entries..." << "\r\n";
     outfile.close();
     // the key may not exist yet
@@ -43,7 +44,7 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
         hResult = RegCreateKey(HKEY_LOCAL_MACHINE, REGISTRY_OVERLAY_KEY, &shellOverlayKey);
         if(!SUCCEEDED(hResult)) {
             std::ofstream outfile;
-            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+            outfile.open(logsFileName().c_str(), std::ios_base::app);
             outfile << "Failed to MakeRegistryEntries 41" << "\r\n";
             outfile.close();
             return hResult;
@@ -55,7 +56,7 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
 
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 50" << "\r\n";
         outfile.close();
         return hResult;
@@ -67,7 +68,7 @@ HRESULT NCOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     hResult = RegSetValueEx(syncExOverlayKey, nullptr, 0, REG_SZ, (LPBYTE)value, (DWORD)((wcslen(value)+1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 59" << "\r\n";
         outfile.close();
         return hResult;
@@ -98,7 +99,7 @@ HRESULT NCOverlayRegistrationHandler::RemoveRegistryEntries(PCWSTR friendlyName)
 HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWSTR friendlyName, const CLSID& clsid)
 {
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "Start RegisterCOMObject..." << "\r\n";
     outfile.close();
 
@@ -114,7 +115,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegOpenKeyEx(HKEY_CLASSES_ROOT, REGISTRY_CLSID, 0, KEY_WRITE, &hKey));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 96" << "\r\n";
         outfile.close();
         return hResult;
@@ -124,7 +125,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 103" << "\r\n";
         outfile.close();
         return hResult;
@@ -136,7 +137,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_IN_PROCESS, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &inprocessKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 111" << "\r\n";
         outfile.close();
         return hResult;
@@ -146,7 +147,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
 
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 119" << "\r\n";
         outfile.close();
         return hResult;
@@ -155,7 +156,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegSetValueEx(inprocessKey, REGISTRY_THREADING, 0, REG_SZ, (LPBYTE)REGISTRY_APARTMENT, (DWORD)((wcslen(REGISTRY_APARTMENT)+1) * sizeof(TCHAR))));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 125" << "\r\n";
         outfile.close();
         return hResult;
@@ -165,7 +166,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_VERSION, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &versionKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 132" << "\r\n";
         outfile.close();
         return hResult;
@@ -174,7 +175,7 @@ HRESULT NCOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegSetValueEx(versionKey, nullptr, 0, REG_SZ, (LPBYTE)REGISTRY_VERSION_NUMBER, (DWORD)(wcslen(REGISTRY_VERSION_NUMBER)+1) * sizeof(TCHAR)));
     if (!SUCCEEDED(hResult)) {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "Failed to MakeRegistryEntries 138" << "\r\n";
         outfile.close();
         return hResult;
@@ -188,7 +189,7 @@ HRESULT NCOverlayRegistrationHandler::UnregisterCOMObject(const CLSID& clsid)
     wchar_t stringCLSID[MAX_PATH];
 
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "Start UnregisterCOMObject..." << "\r\n";
     outfile.close();
 

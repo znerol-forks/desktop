@@ -24,6 +24,8 @@
 #include <locale>
 #include <codecvt>
 
+#include "utils.h"
+
 using namespace std;
 
 #pragma comment(lib, "shlwapi.lib")
@@ -54,7 +56,7 @@ NCOverlay::NCOverlay(int state)
     , _state(state)
 {
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "NCOverlay::NCOverlay state: " << state << "\r\n";
     outfile.close();
 }
@@ -89,7 +91,7 @@ IFACEMETHODIMP NCOverlay::QueryInterface(REFIID riid, void **ppv)
     }
 
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "NCOverlay::QueryInterface ppv: " << ppv << " hr: " << hr << "\r\n";
     outfile.close();
 
@@ -157,7 +159,7 @@ IFACEMETHODIMP NCOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 
         if (watchedFoldersString.size() > 0) {
             std::ofstream outfile;
-            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+            outfile.open(logsFileName().c_str(), std::ios_base::app);
             outfile << "NCOverlay::IsMemberOf? watched directories pwszPath: " << pwszPathConverted << " are BEGIN : " << "\r\n ";
             outfile << watchedFoldersString << "\r\n";
             outfile << "NCOverlay::IsMemberOf? watched directories are END"<< "\r\n";
@@ -186,7 +188,7 @@ IFACEMETHODIMP NCOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
         return MAKE_HRESULT(S_FALSE, 0, 0);
     }
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
 
     using convert_type = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_type, wchar_t> converter;
@@ -210,7 +212,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
     std::string converted_str = converter.to_bytes(pwszIconFile);
 
     std::ofstream outfile;
-    outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
     outfile << "NCOverlay::GetOverlayInfo pwszIconFile: " << converted_str;
     outfile.close();
 
@@ -218,7 +220,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
         HRESULT hResult = HRESULT_FROM_WIN32(GetLastError());
         wcerr << L"IsOK? " << (hResult == S_OK) << L" with path " << pwszIconFile << L", index " << *pIndex << endl;
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "NCOverlay::GetOverlayInfo IsOK? " << (hResult == S_OK) << L" with path " << converted_str << L", index " << *pIndex << "\r\n";
         outfile.close();
         return hResult;
@@ -226,7 +228,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
 
     {
         std::ofstream outfile;
-        outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+        outfile.open(logsFileName().c_str(), std::ios_base::app);
         outfile << "NCOverlay::GetOverlayInfo false" << "\r\n";
         outfile.close();
     }

@@ -18,6 +18,8 @@
 
 #include <shlobj.h>
 
+#include "../NCOverlays/utils.h"
+
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -141,7 +143,7 @@ void RemotePathChecker::workerThreadLoop()
 
                 std::string converted_str = converter.to_bytes(responsePath);
                 std::ofstream outfile;
-                outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+                outfile.open(logsFileName().c_str(), std::ios_base::app);
                 outfile << "RemotePathChecker::workerThreadLoop()... updateView: " << updateView << " responsePath: " << converted_str << " state: " << state << "\r\n";
                 outfile.close();
                 if (updateView) {
@@ -152,7 +154,7 @@ void RemotePathChecker::workerThreadLoop()
 
         if (socket.Event() == INVALID_HANDLE_VALUE) {
             std::ofstream outfile;
-            outfile.open("C:\\Users\\alex-z\\AppData\\Roaming\\Nextcloud\\logs\\ncoverlays.txt", std::ios_base::app);
+            outfile.open(logsFileName().c_str(), std::ios_base::app);
             outfile << "RemotePathChecker::workerThreadLoop()... socket.Event() == INVALID_HANDLE_VALUE" << "\r\n";
             outfile.close();
             atomic_store(&_watchedDirectories, make_shared<const vector<wstring>>());
