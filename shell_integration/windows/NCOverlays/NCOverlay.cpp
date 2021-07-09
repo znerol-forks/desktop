@@ -213,7 +213,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
 
     std::ofstream outfile;
     outfile.open(logsFileName().c_str(), std::ios_base::app);
-    outfile << "NCOverlay::GetOverlayInfo pwszIconFile: " << converted_str;
+    outfile << "NCOverlay::GetOverlayInfo pwszIconFile: " << converted_str << "\r\n";
     outfile.close();
 
     if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0) {

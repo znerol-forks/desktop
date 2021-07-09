@@ -67,88 +67,117 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 
     std::ofstream outfile;
     outfile.open(logsFileName().c_str(), std::ios_base::app);
-    outfile << "DllGetClassObject..." << "\r\n";
+
+    OLECHAR *rclsidString;
+    if (!SUCCEEDED(StringFromCLSID(rclsid, &rclsidString))) {
+        outfile << "DllGetClassObject StringFromCLSID(rclsid, &rclsidString) failed!" << "\r\n";
+    }
+
+    OLECHAR *riidString;
+    if (!SUCCEEDED(StringFromIID(riid, &riidString))) {
+        outfile << "DllGetClassObject StringFromIID(riid, &riidString) failed!" << "\r\n";
+    }
+
+    outfile << "DllGetClassObject for rclsid" << rclsidString << " with riid: " << riidString << "\r\n";
+
+    ::CoTaskMemFree(rclsidString);
+    ::CoTaskMemFree(riidString);
  
     hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
-        OLECHAR *guidString;
-        StringFromCLSID(guid, &guidString);
-
-        // use guidString...
-
-        // ensure memory is freed
+        WCHAR guidString[256];
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString))) {
+            outfile << "State_Error !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_Error !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n ";
         outfile.close();
-
         ::CoTaskMemFree(guidString);
         return hResult;
     }
-    if (IsEqualCLSID(guid, rclsid)) {
-        OLECHAR *guidString;
-        StringFromIID(rclsid, &guidString);
-        outfile << "State_Error IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+    if (IsEqualGUID(rclsid, guid)) {
+        OLECHAR *rclsidString;
+        StringFromIID(rclsid, &rclsidString);
+        outfile << "State_Error IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
+        ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_Error);
     }
 
     hResult = CLSIDFromString(OVERLAY_GUID_OK, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
-        OLECHAR *guidString;
-        StringFromCLSID(guid, &guidString);
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
         outfile << "State_OK !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(guidString);
         return hResult;
     }
-    if (IsEqualCLSID(guid, rclsid)) {
-        OLECHAR *guidString;
-        StringFromIID(rclsid, &guidString);
-        outfile << "State_OK IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+    if (IsEqualGUID(rclsid, guid)) {
+        OLECHAR *rclsidString;
+        StringFromIID(rclsid, &rclsidString);
+        outfile << "State_OK IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
+        ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_OK);
     }
 
     hResult = CLSIDFromString(OVERLAY_GUID_OK_SHARED, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
-        OLECHAR *guidString;
-        StringFromCLSID(guid, &guidString);
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
         outfile << "State_OKShared !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(guidString);
         return hResult;
     }
-    if (IsEqualCLSID(guid, rclsid)) {
-        OLECHAR *guidString;
-        StringFromIID(rclsid, &guidString);
-        outfile << "State_OKShared IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << guidString << "\r\n";
+    if (IsEqualGUID(rclsid, guid)) {
+        OLECHAR *rclsidString;
+        StringFromIID(rclsid, &rclsidString);
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
+        outfile << "State_OKShared IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
+        ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_OKShared);
     }
 
     hResult = CLSIDFromString(OVERLAY_GUID_SYNC, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
-        outfile << "State_Sync !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << (LPCLSID)&guid << "\r\n";
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
+        outfile << "State_Sync !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
         return hResult;
     }
-    if (IsEqualCLSID(guid, rclsid)) {
-        outfile << "State_Sync IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << (LPCLSID)&rclsid << "\r\n";
+    if (IsEqualGUID(rclsid, guid)) {
+
+        OLECHAR *rclsidString;
+        StringFromIID(rclsid, &rclsidString);
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
+        outfile << "State_Sync IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
+        ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_Sync);
     }
 
     hResult = CLSIDFromString(OVERLAY_GUID_WARNING, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
-        outfile << "State_Warning !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << (LPCLSID)&guid << "\r\n";
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
+        outfile << "State_Warning !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
+        ::CoTaskMemFree(guidString);
         return hResult;
     }
-    if (IsEqualCLSID(guid, rclsid)) {
-        outfile << "State_Warning IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << (LPCLSID)&rclsid << "\r\n";
+    if (IsEqualGUID(rclsid, guid)) {
+        OLECHAR *rclsidString;
+        StringFromIID(rclsid, &rclsidString);
+        WCHAR guidString[256];
+        StringFromGUID2(guid, guidString, _countof(guidString));
+        outfile << "State_Warning IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
+        ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_Warning);
     }
 
