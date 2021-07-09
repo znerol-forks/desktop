@@ -206,14 +206,21 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
     *pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
     *pIndex = _state;
 
+    std::ofstream outfile;
+    outfile.open(logsFileName().c_str(), std::ios_base::app);
+
     using convert_type = std::codecvt_utf8<wchar_t>;
     std::wstring_convert<convert_type, wchar_t> converter;
 
     std::string converted_str = converter.to_bytes(pwszIconFile);
 
-    std::ofstream outfile;
-    outfile.open(logsFileName().c_str(), std::ios_base::app);
-    outfile << "NCOverlay::GetOverlayInfo pwszIconFile: " << converted_str << "\r\n";
+    if (std::string("C:\\Program Files (x86)\\Dropbox\\Client\\Dropbox.exe") == converted_str) {
+        outfile << "NCOverlay::GetOverlayInfo for incorrect pwszIconFile: " << converted_str << "\r\n";
+        outfile.close();
+        return S_FALSE;
+    }
+
+    outfile << "NCOverlay::GetOverlayInfo trying to GetModuleFileName for pwszIconFile: " << converted_str << "\r\n";
     outfile.close();
 
     if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0) {
@@ -229,7 +236,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
     {
         std::ofstream outfile;
         outfile.open(logsFileName().c_str(), std::ios_base::app);
-        outfile << "NCOverlay::GetOverlayInfo false" << "\r\n";
+        outfile << "NCOverlay::GetOverlayInfo !GetModuleFileName HRESULT_FROM_WIN32(GetLastError()): " << HRESULT_FROM_WIN32(GetLastError()) << "\r\n";
         outfile.close();
     }
 
