@@ -70,34 +70,45 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 
     OLECHAR *rclsidString;
     if (!SUCCEEDED(StringFromCLSID(rclsid, &rclsidString))) {
-        outfile << "DllGetClassObject StringFromCLSID(rclsid, &rclsidString) failed!" << "\r\n";
+        outfile << "DllGetClassObject !SUCCEEDED(StringFromCLSID(rclsid, &rclsidString)!" << "\r\n";
     }
 
     OLECHAR *riidString;
-    if (!SUCCEEDED(StringFromIID(riid, &riidString))) {
-        outfile << "DllGetClassObject StringFromIID(riid, &riidString) failed!" << "\r\n";
+    if (!SUCCEEDED(StringFromIID(rclsid, &riidString))) {
+        outfile << "DllGetClassObject !SUCCEEDED(StringFromIID(rclsid, &riidString)!" << "\r\n";
     }
 
-    outfile << "DllGetClassObject for rclsid" << rclsidString << " with riid: " << riidString << "\r\n";
+    OLECHAR *refRiidString;
+    if (!SUCCEEDED(StringFromIID(riid, &refRiidString))) {
+        outfile << "DllGetClassObject !SUCCEEDED StringFromIID(riid, &refRiidString)!" << "\r\n";
+    }
+
+    outfile << "DllGetClassObject for rclsid" << rclsidString << " with riid: " << refRiidString << " and riidString: " << riidString << "\r\n";
 
     ::CoTaskMemFree(rclsidString);
     ::CoTaskMemFree(riidString);
+    ::CoTaskMemFree(refRiidString);
  
     hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
         WCHAR guidString[256];
-        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString))) {
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
             outfile << "State_Error !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
         }
         outfile << "State_Error !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n ";
         outfile.close();
-        ::CoTaskMemFree(guidString);
         return hResult;
     }
     if (IsEqualGUID(rclsid, guid)) {
         OLECHAR *rclsidString;
-        StringFromIID(rclsid, &rclsidString);
-        outfile << "State_Error IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << rclsidString << "\r\n";
+        if (!SUCCEEDED(StringFromIID(rclsid, &rclsidString))) {
+            outfile << "State_Error !SUCCEEDED(StringFromIID(rclsid, &rclsidString)" << "\r\n ";
+        }
+        WCHAR guidString[256];
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_Error IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
+        outfile << "State_Error IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_Error);
@@ -106,16 +117,23 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     hResult = CLSIDFromString(OVERLAY_GUID_OK, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_OK IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_OK !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
         return hResult;
     }
     if (IsEqualGUID(rclsid, guid)) {
         OLECHAR *rclsidString;
-        StringFromIID(rclsid, &rclsidString);
-        outfile << "State_OK IsEqualCLSID guid: " << (LPCLSID)&guid << " rclsid: " << rclsidString << "\r\n";
+        if (!SUCCEEDED(StringFromIID(rclsid, &rclsidString))) {
+            outfile << "State_OK !SUCCEEDED(StringFromIID(rclsid, &rclsidString)" << "\r\n ";
+        }
+        WCHAR guidString[256];
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_OK IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
+        outfile << "State_OK IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(rclsidString);
         return CreateFactory(riid, ppv, State_OK);
@@ -124,17 +142,22 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     hResult = CLSIDFromString(OVERLAY_GUID_OK_SHARED, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_OKShared IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_OKShared !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
         return hResult;
     }
     if (IsEqualGUID(rclsid, guid)) {
         OLECHAR *rclsidString;
-        StringFromIID(rclsid, &rclsidString);
+        if (!SUCCEEDED(StringFromIID(rclsid, &rclsidString))) {
+            outfile << "State_OKShared !SUCCEEDED(StringFromIID(rclsid, &rclsidString)" << "\r\n ";
+        }
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_OKShared IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_OKShared IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(rclsidString);
@@ -144,7 +167,9 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     hResult = CLSIDFromString(OVERLAY_GUID_SYNC, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_Sync IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_Sync !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
         return hResult;
@@ -152,9 +177,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     if (IsEqualGUID(rclsid, guid)) {
 
         OLECHAR *rclsidString;
-        StringFromIID(rclsid, &rclsidString);
+        if (!SUCCEEDED(StringFromIID(rclsid, &rclsidString))) {
+            outfile << "State_Sync !SUCCEEDED(StringFromIID(rclsid, &rclsidString)" << "\r\n ";
+        }
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_Sync IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)"  << "\r\n ";
+        }
         outfile << "State_Sync IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(rclsidString);
@@ -164,17 +193,22 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
     hResult = CLSIDFromString(OVERLAY_GUID_WARNING, (LPCLSID)&guid);
     if (!SUCCEEDED(hResult)) {
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_Warning IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)"  << "\r\n ";
+        }
         outfile << "State_Warning !SUCCEEDED(hResult) hResult: " << hResult << " guid : " << guidString << "\r\n";
         outfile.close();
-        ::CoTaskMemFree(guidString);
         return hResult;
     }
     if (IsEqualGUID(rclsid, guid)) {
         OLECHAR *rclsidString;
-        StringFromIID(rclsid, &rclsidString);
+        if (!SUCCEEDED(StringFromIID(rclsid, &rclsidString))) {
+            outfile << "State_Warning !SUCCEEDED(StringFromIID(rclsid, &rclsidString)" << "\r\n ";
+        }
         WCHAR guidString[256];
-        StringFromGUID2(guid, guidString, _countof(guidString));
+        if (!SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)))) {
+            outfile << "State_Warning IsEqualCLSID !SUCCEEDED(StringFromGUID2(guid, guidString, _countof(guidString)" << "\r\n ";
+        }
         outfile << "State_Warning IsEqualCLSID guid: " << guidString << " rclsid: " << rclsidString << "\r\n";
         outfile.close();
         ::CoTaskMemFree(rclsidString);
