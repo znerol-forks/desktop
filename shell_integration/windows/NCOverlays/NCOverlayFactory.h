@@ -41,7 +41,7 @@ protected:
     ~NCOverlayFactory();
 
 private:
-    long _referenceCount;
+    long _referenceCount = 0L;
     int _state;
 };
 

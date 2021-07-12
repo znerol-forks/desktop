@@ -50,7 +50,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     std::ofstream outfile;
     outfile.open(logsFileName().c_str(), std::ios_base::app);
-    outfile << "DllMain..." << "\r\n";
+    outfile << "DllMain hModule " << hModule << "\r\n";
     outfile.close();
     switch (dwReason)
     {

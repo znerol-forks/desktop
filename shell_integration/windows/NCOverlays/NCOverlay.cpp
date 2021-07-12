@@ -217,7 +217,7 @@ IFACEMETHODIMP NCOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pI
     if (std::string("C:\\Program Files (x86)\\Dropbox\\Client\\Dropbox.exe") == converted_str) {
         outfile << "NCOverlay::GetOverlayInfo for incorrect pwszIconFile: " << converted_str << "\r\n";
         outfile.close();
-        return S_FALSE;
+        return E_POINTER;
     }
 
     outfile << "NCOverlay::GetOverlayInfo trying to GetModuleFileName for pwszIconFile: " << converted_str << "\r\n";
