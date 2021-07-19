@@ -42,6 +42,7 @@ public:
     virtual void checkForUpdate() = 0;
     virtual void backgroundCheckForUpdate() = 0;
     virtual bool handleStartup() = 0;
+    virtual void showNewUpdateToInstallDialog() {}
 
 protected:
     static QString clientVersion();

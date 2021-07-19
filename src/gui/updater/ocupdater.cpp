@@ -104,17 +104,10 @@ bool OCUpdater::performUpdate()
     QString updateFile = settings.value(updateAvailableC).toString();
     if (!updateFile.isEmpty() && QFile(updateFile).exists()
         && !updateSucceeded() /* Someone might have run the updater manually between restarts */) {
-        const QString name = Theme::instance()->appNameGUI();
-        if (QMessageBox::information(nullptr, tr("New %1 Update Ready").arg(name),
-                tr("A new update for %1 is about to be installed. The updater may ask\n"
-                   "for additional privileges during the process.")
-                    .arg(name),
-                QMessageBox::Ok)) {
-            slotStartInstaller();
-            return true;
-        }
+        showNewUpdateToInstallDialog();
+        return false;
     }
-    return false;
+    return true;
 }
 
 void OCUpdater::backgroundCheckForUpdate()
@@ -216,6 +209,7 @@ void OCUpdater::slotStartInstaller()
 
         QProcess::startDetached("powershell.exe", QStringList{"-Command", command});
     }
+    qApp->quit();
 }
 
 void OCUpdater::checkForUpdate()
@@ -476,13 +470,70 @@ void NSISUpdater::showUpdateErrorDialog(const QString &targetVersion)
     // askagain: do nothing
     connect(retry, &QAbstractButton::clicked, this, [this]() {
         slotStartInstaller();
-        qApp->quit();
     });
     connect(getupdate, &QAbstractButton::clicked, this, [this]() {
         slotOpenUpdateUrl();
     });
 
     layout->addWidget(bb);
+
+    msgBox->open();
+}
+
+void NSISUpdater::showNewUpdateToInstallDialog()
+{
+    const QString name = Theme::instance()->appNameGUI();
+
+    auto msgBox = new QDialog;
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->setWindowFlags(msgBox->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    QIcon infoIcon = msgBox->style()->standardIcon(QStyle::SP_MessageBoxInformation);
+    int iconSize = msgBox->style()->pixelMetric(QStyle::PM_MessageBoxIconSize);
+
+    msgBox->setWindowIcon(infoIcon);
+
+    auto layout = new QVBoxLayout(msgBox);
+    auto hlayout = new QHBoxLayout;
+    layout->addLayout(hlayout);
+
+    auto ico = new QLabel;
+    ico->setFixedSize(iconSize, iconSize);
+    ico->setPixmap(infoIcon.pixmap(iconSize));
+    auto lbl = new QLabel;
+
+    msgBox->setWindowTitle(tr("New %1 Update Ready").arg(name));
+
+    const QString txt = tr("A new update for %1 is about to be installed. The updater may ask\n"
+                         "for additional privileges during the process.").arg(name);
+
+    lbl->setText(txt);
+    lbl->setTextFormat(Qt::RichText);
+    lbl->setWordWrap(false);
+
+    hlayout->addWidget(ico);
+    hlayout->addWidget(lbl);
+
+    auto hlayout1 = new QHBoxLayout;
+    layout->addLayout(hlayout1);
+
+    auto bb = new QDialogButtonBox;
+    auto accept = bb->addButton(QDialogButtonBox::Ok);
+
+    hlayout1->addWidget(bb);
+
+    connect(accept, &QAbstractButton::clicked, msgBox, &QDialog::accept);
+   
+    // askagain: do nothing
+    connect(accept, &QAbstractButton::clicked, this, [this]() {
+        slotStartInstaller();
+    });
+
+    connect(msgBox, &QDialog::rejected, this, [this]() {
+        slotStartInstaller();
+    });
+
+    msgBox->adjustSize();
 
     msgBox->open();
 }

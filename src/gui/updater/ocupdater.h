@@ -159,6 +159,7 @@ private:
     void wipeUpdateData();
     void showNoUrlDialog(const UpdateInfo &info);
     void showUpdateErrorDialog(const QString &targetVersion);
+    virtual void showNewUpdateToInstallDialog() override;
     void versionInfoArrived(const UpdateInfo &info) override;
     QScopedPointer<QTemporaryFile> _file;
     QString _targetFile;
