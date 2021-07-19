@@ -105,9 +105,8 @@ bool OCUpdater::performUpdate()
     if (!updateFile.isEmpty() && QFile(updateFile).exists()
         && !updateSucceeded() /* Someone might have run the updater manually between restarts */) {
         showNewUpdateToInstallDialog();
-        return false;
     }
-    return true;
+    return false;
 }
 
 void OCUpdater::backgroundCheckForUpdate()
@@ -482,60 +481,53 @@ void NSISUpdater::showUpdateErrorDialog(const QString &targetVersion)
 
 void NSISUpdater::showNewUpdateToInstallDialog()
 {
-    const QString name = Theme::instance()->appNameGUI();
+    const auto name = Theme::instance()->appNameGUI();
 
-    auto msgBox = new QDialog;
-    msgBox->setAttribute(Qt::WA_DeleteOnClose);
-    msgBox->setWindowFlags(msgBox->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    auto updateToInstallDialog = new QDialog;
+    updateToInstallDialog->setWindowTitle(tr("New %1 Update Ready").arg(name));
+    updateToInstallDialog->setAttribute(Qt::WA_DeleteOnClose);
+    updateToInstallDialog->setWindowFlags(updateToInstallDialog->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    QIcon infoIcon = msgBox->style()->standardIcon(QStyle::SP_MessageBoxInformation);
-    int iconSize = msgBox->style()->pixelMetric(QStyle::PM_MessageBoxIconSize);
+    const auto mainLayout = new QVBoxLayout(updateToInstallDialog);
+    const auto contentsLayout = new QHBoxLayout;
+    mainLayout->addLayout(contentsLayout);
 
-    msgBox->setWindowIcon(infoIcon);
+    // add icon
+    QIcon infoIcon = updateToInstallDialog->style()->standardIcon(QStyle::SP_MessageBoxInformation);
+    const int iconSize = updateToInstallDialog->style()->pixelMetric(QStyle::PM_MessageBoxIconSize);
+    const auto messageIcon = new QLabel;
+    messageIcon->setFixedSize(iconSize, iconSize);
+    messageIcon->setPixmap(infoIcon.pixmap(iconSize));
+    contentsLayout->addWidget(messageIcon);
 
-    auto layout = new QVBoxLayout(msgBox);
-    auto hlayout = new QHBoxLayout;
-    layout->addLayout(hlayout);
+    // add message
+    const auto messageLabel = new QLabel;
+    const QString messageText = tr("A new update for %1 is about to be installed. The updater may ask\n"
+                           "for additional privileges during the process.")
+                            .arg(name);
+    messageLabel->setText(messageText);
+    messageLabel->setFixedWidth(340);
+    messageLabel->setWordWrap(true);
+    contentsLayout->addWidget(messageLabel);
 
-    auto ico = new QLabel;
-    ico->setFixedSize(iconSize, iconSize);
-    ico->setPixmap(infoIcon.pixmap(iconSize));
-    auto lbl = new QLabel;
+    // add button
+    const auto buttonBoxLayout = new QHBoxLayout;
+    mainLayout->addLayout(buttonBoxLayout);
+    const auto buttonBox = new QDialogButtonBox;
+    const auto accept = buttonBox->addButton(QDialogButtonBox::Ok);
+    buttonBoxLayout->addWidget(buttonBox);
 
-    msgBox->setWindowTitle(tr("New %1 Update Ready").arg(name));
-
-    const QString txt = tr("A new update for %1 is about to be installed. The updater may ask\n"
-                         "for additional privileges during the process.").arg(name);
-
-    lbl->setText(txt);
-    lbl->setTextFormat(Qt::RichText);
-    lbl->setWordWrap(false);
-
-    hlayout->addWidget(ico);
-    hlayout->addWidget(lbl);
-
-    auto hlayout1 = new QHBoxLayout;
-    layout->addLayout(hlayout1);
-
-    auto bb = new QDialogButtonBox;
-    auto accept = bb->addButton(QDialogButtonBox::Ok);
-
-    hlayout1->addWidget(bb);
-
-    connect(accept, &QAbstractButton::clicked, msgBox, &QDialog::accept);
-   
-    // askagain: do nothing
+    connect(accept, &QAbstractButton::clicked, updateToInstallDialog, &QDialog::accept);
     connect(accept, &QAbstractButton::clicked, this, [this]() {
         slotStartInstaller();
     });
-
-    connect(msgBox, &QDialog::rejected, this, [this]() {
+    connect(updateToInstallDialog, &QDialog::rejected, this, [this]() {
         slotStartInstaller();
     });
 
-    msgBox->adjustSize();
+    updateToInstallDialog->adjustSize();
 
-    msgBox->open();
+    updateToInstallDialog->open();
 }
 
 bool NSISUpdater::handleStartup()
