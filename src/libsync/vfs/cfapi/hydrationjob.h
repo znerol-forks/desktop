@@ -91,6 +91,9 @@ private:
     void onCancellationServerNewConnection();
     void onGetFinished();
 
+    void handleNewConnection();
+    void handleNewConnectionForEncryptedFile();
+
     void startServerAndWaitForConnections();
 
     AccountPtr _account;

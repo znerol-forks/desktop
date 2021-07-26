@@ -314,8 +314,8 @@ void GETFileJob::slotReadyRead()
             _bandwidthQuota -= toRead;
         }
 
-        const qint64 r = reply()->read(buffer.data(), toRead);
-        if (r < 0) {
+        const qint64 readBytes = reply()->read(buffer.data(), toRead);
+        if (readBytes < 0) {
             _errorString = networkReplyErrorString(*reply());
             _errorStatus = SyncFileItem::NormalError;
             qCWarning(lcGetJob) << "Error while reading from device: " << _errorString;
@@ -323,11 +323,11 @@ void GETFileJob::slotReadyRead()
             return;
         }
 
-        const qint64 w = writeToDevice(buffer.constData(), r);
-        if (w != r) {
+        const qint64 writtenBytes = writeToDevice(buffer.constData(), readBytes);
+        if (writtenBytes != readBytes) {
             _errorString = _device->errorString();
             _errorStatus = SyncFileItem::NormalError;
-            qCWarning(lcGetJob) << "Error while writing to file" << w << r << _errorString;
+            qCWarning(lcGetJob) << "Error while writing to file" << writtenBytes << readBytes << _errorString;
             reply()->abort();
             return;
         }

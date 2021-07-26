@@ -272,34 +272,9 @@ void OCC::HydrationJob::onNewConnection()
     Q_ASSERT(!_job);
 
     if (isEncryptedFile()) {
-        // TODO: the following code is borrowed from PropagateDownloadEncrypted (should we factor it out and reuse? YES! Should we do it now? Probably not, as, this would imply modifying PropagateDownloadEncrypted, so we need a separate PR)
-        qCInfo(lcHydration) << "Got new connection for encrypted file. Getting required info for decryption...";
-        const auto rootPath = [=]() {
-            const auto result = _remotePath;
-            if (result.startsWith('/')) {
-                return result.mid(1);
-            } else {
-                return result;
-            }
-        }();
-
-        const auto remoteFilename = encryptedFileName();
-        const auto remotePath = QString(rootPath + remoteFilename);
-        const auto remoteParentPath = remotePath.left(remotePath.lastIndexOf('/'));
-
-        auto job = new LsColJob(_account, remoteParentPath, this);
-        job->setProperties({ "resourcetype", "http://owncloud.org/ns:fileid" });
-        connect(job, &LsColJob::directoryListingSubfolders,
-            this, &HydrationJob::slotCheckFolderId);
-        connect(job, &LsColJob::finishedWithError,
-            this, &HydrationJob::slotFolderIdError);
-        job->start();
+        handleNewConnectionForEncryptedFile();
     } else {
-        qCInfo(lcHydration) << "Got new connection starting GETFileJob" << _requestId << _folderPath;
-        _transferDataSocket = _transferDataServer->nextPendingConnection();
-        _job = new GETFileJob(_account, _remotePath + _folderPath, _transferDataSocket, {}, {}, 0, this);
-        connect(_job, &GETFileJob::finishedSignal, this, &HydrationJob::onGetFinished);
-        _job->start();
+        handleNewConnection();
     }
 }
 
@@ -348,4 +323,39 @@ void OCC::HydrationJob::onGetFinished()
         return;
     }
     emitFinished(Success);
+}
+
+void OCC::HydrationJob::handleNewConnection()
+{
+    qCInfo(lcHydration) << "Got new connection starting GETFileJob" << _requestId << _folderPath;
+    _transferDataSocket = _transferDataServer->nextPendingConnection();
+    _job = new GETFileJob(_account, _remotePath + _folderPath, _transferDataSocket, {}, {}, 0, this);
+    connect(_job, &GETFileJob::finishedSignal, this, &HydrationJob::onGetFinished);
+    _job->start();
+}
+
+void OCC::HydrationJob::handleNewConnectionForEncryptedFile()
+{
+    // TODO: the following code is borrowed from PropagateDownloadEncrypted (should we factor it out and reuse? YES! Should we do it now? Probably not, as, this would imply modifying PropagateDownloadEncrypted, so we need a separate PR)
+    qCInfo(lcHydration) << "Got new connection for encrypted file. Getting required info for decryption...";
+    const auto rootPath = [=]() {
+        const auto result = _remotePath;
+        if (result.startsWith('/')) {
+            return result.mid(1);
+        } else {
+            return result;
+        }
+    }();
+
+    const auto remoteFilename = encryptedFileName();
+    const auto remotePath = QString(rootPath + remoteFilename);
+    const auto remoteParentPath = remotePath.left(remotePath.lastIndexOf('/'));
+
+    auto job = new LsColJob(_account, remoteParentPath, this);
+    job->setProperties({ "resourcetype", "http://owncloud.org/ns:fileid" });
+    connect(job, &LsColJob::directoryListingSubfolders,
+        this, &HydrationJob::slotCheckFolderId);
+    connect(job, &LsColJob::finishedWithError,
+        this, &HydrationJob::slotFolderIdError);
+    job->start();
 }

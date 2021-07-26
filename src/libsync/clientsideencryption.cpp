@@ -67,7 +67,7 @@ namespace {
     const char e2e_private[] = "_e2e-private";
     const char e2e_mnemonic[] = "_e2e-mnemonic";
 
-    const qint64 blockSize = 1024;
+    constexpr qint64 blockSize = 1024;
 
     QList<QByteArray> oldCipherFormatSplit(const QByteArray &cipher)
     {
@@ -298,7 +298,7 @@ namespace {
     };
 
     QByteArray BIO2ByteArray(Bio &b) {
-        int pending = static_cast<int>(BIO_ctrl_pending(b));
+        const int pending = static_cast<int>(BIO_ctrl_pending(b));
         QByteArray res(pending, '\0');
         BIO_read(b, unsignedData(res), pending);
         return res;
@@ -426,17 +426,17 @@ QByteArray encryptPrivateKey(
     }
     clen += len;
 
-    /* Get the tag */
-    QByteArray tag(OCC::CommonConstants::e2EeTagSize, '\0');
-    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(tag))) {
-        qCInfo(lcCse()) << "Error getting the tag";
+    /* Get the e2EeTag */
+    QByteArray e2EeTag(OCC::CommonConstants::e2EeTagSize, '\0');
+    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(e2EeTag))) {
+        qCInfo(lcCse()) << "Error getting the e2EeTag";
         handleErrors();
     }
 
     QByteArray cipherTXT;
     cipherTXT.reserve(clen + 16);
     cipherTXT.append(ctext, clen);
-    cipherTXT.append(tag);
+    cipherTXT.append(e2EeTag);
 
     QByteArray result = cipherTXT.toBase64();
     result += '|';
@@ -466,7 +466,7 @@ QByteArray decryptPrivateKey(const QByteArray& key, const QByteArray& data) {
     QByteArray cipherTXT = QByteArray::fromBase64(cipherTXT64);
     QByteArray iv = QByteArray::fromBase64(ivB64);
 
-    QByteArray tag = cipherTXT.right(OCC::CommonConstants::e2EeTagSize);
+    const QByteArray e2EeTag = cipherTXT.right(OCC::CommonConstants::e2EeTagSize);
     cipherTXT.chop(OCC::CommonConstants::e2EeTagSize);
 
     // Init
@@ -507,9 +507,9 @@ QByteArray decryptPrivateKey(const QByteArray& key, const QByteArray& data) {
         return QByteArray();
     }
 
-    /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
-    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), (unsigned char *)tag.constData())) {
-        qCInfo(lcCse()) << "Could not set tag";
+    /* Set expected e2EeTag value. Works in OpenSSL 1.0.1d and later */
+    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, e2EeTag.size(), (unsigned char *)e2EeTag.constData())) {
+        qCInfo(lcCse()) << "Could not set e2EeTag";
         return QByteArray();
     }
 
@@ -556,7 +556,7 @@ QByteArray decryptStringSymmetric(const QByteArray& key, const QByteArray& data)
     QByteArray cipherTXT = QByteArray::fromBase64(cipherTXT64);
     QByteArray iv = QByteArray::fromBase64(ivB64);
 
-    QByteArray tag = cipherTXT.right(OCC::CommonConstants::e2EeTagSize);
+    const QByteArray e2EeTag = cipherTXT.right(OCC::CommonConstants::e2EeTagSize);
     cipherTXT.chop(OCC::CommonConstants::e2EeTagSize);
 
     // Init
@@ -597,9 +597,9 @@ QByteArray decryptStringSymmetric(const QByteArray& key, const QByteArray& data)
         return QByteArray();
     }
 
-    /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
-    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), (unsigned char *)tag.constData())) {
-        qCInfo(lcCse()) << "Could not set tag";
+    /* Set expected e2EeTag value. Works in OpenSSL 1.0.1d and later */
+    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, e2EeTag.size(), (unsigned char *)e2EeTag.constData())) {
+        qCInfo(lcCse()) << "Could not set e2EeTag";
         return QByteArray();
     }
 
@@ -689,10 +689,10 @@ QByteArray encryptStringSymmetric(const QByteArray& key, const QByteArray& data)
     }
     clen += len;
 
-    /* Get the tag */
-    QByteArray tag(OCC::CommonConstants::e2EeTagSize, '\0');
-    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(tag))) {
-        qCInfo(lcCse()) << "Error getting the tag";
+    /* Get the e2EeTag */
+    QByteArray e2EeTag(OCC::CommonConstants::e2EeTagSize, '\0');
+    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(e2EeTag))) {
+        qCInfo(lcCse()) << "Error getting the e2EeTag";
         handleErrors();
         return {};
     }
@@ -700,7 +700,7 @@ QByteArray encryptStringSymmetric(const QByteArray& key, const QByteArray& data)
     QByteArray cipherTXT;
     cipherTXT.reserve(clen + 16);
     cipherTXT.append(ctext, clen);
-    cipherTXT.append(tag);
+    cipherTXT.append(e2EeTag);
 
     QByteArray result = cipherTXT.toBase64();
     result += '|';
@@ -1683,15 +1683,15 @@ bool EncryptionHelper::fileEncryption(const QByteArray &key, const QByteArray &i
     output->write(out, len);
     total_len += len;
 
-    /* Get the tag */
-    QByteArray tag(OCC::CommonConstants::e2EeTagSize, '\0');
-    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(tag))) {
-        qCInfo(lcCse()) << "Could not get tag";
+    /* Get the e2EeTag */
+    QByteArray e2EeTag(OCC::CommonConstants::e2EeTagSize, '\0');
+    if(1 != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, OCC::CommonConstants::e2EeTagSize, unsignedData(e2EeTag))) {
+        qCInfo(lcCse()) << "Could not get e2EeTag";
         return false;
     }
 
-    returnTag = tag;
-    output->write(tag, OCC::CommonConstants::e2EeTagSize);
+    returnTag = e2EeTag;
+    output->write(e2EeTag, OCC::CommonConstants::e2EeTagSize);
 
     input->close();
     output->close();
@@ -1761,11 +1761,11 @@ bool EncryptionHelper::fileDecryption(const QByteArray &key, const QByteArray& i
         output->write(out, len);
     }
 
-    QByteArray tag = input->read(OCC::CommonConstants::e2EeTagSize);
+    const QByteArray e2EeTag = input->read(OCC::CommonConstants::e2EeTagSize);
 
-    /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
-    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), (unsigned char *)tag.constData())) {
-        qCInfo(lcCse()) << "Could not set expected tag";
+    /* Set expected e2EeTag value. Works in OpenSSL 1.0.1d and later */
+    if(!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, e2EeTag.size(), (unsigned char *)e2EeTag.constData())) {
+        qCInfo(lcCse()) << "Could not set expected e2EeTag";
         return false;
     }
 
@@ -1851,7 +1851,7 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
     const bool isLastChunk = _decryptedSoFar + chunkSize == _totalSize;
 
-    // last OCC::CommonConstants::e2EeTagSize bytes is ALWAYS a tag!!!
+    // last OCC::CommonConstants::e2EeTagSize bytes is ALWAYS a e2EeTag!!!
     const qint64 size = isLastChunk ? chunkSize - OCC::CommonConstants::e2EeTagSize : chunkSize;
 
     // either the size is more than 0 and an e2EeTag is at the end of chunk, or, chunk is the e2EeTag itself
@@ -1868,7 +1868,7 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
     while(inputPos < size) {
         // read blockSize or less bytes
-        const QByteArray encryptedBlock = QByteArray(input + inputPos, qMin(size - inputPos, blockSize));
+        const QByteArray encryptedBlock(input + inputPos, qMin(size - inputPos, blockSize));
 
         if (encryptedBlock.size() == 0) {
             qCritical(lcCse()) << "Could not read data from the input buffer.";
@@ -1899,21 +1899,21 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     }
 
     if (isLastChunk) {
-        // if it's a last chunk, we'd need to read a tag at the end and finalize the decryption
+        // if it's a last chunk, we'd need to read a e2EeTag at the end and finalize the decryption
 
         Q_ASSERT(chunkSize - inputPos == OCC::CommonConstants::e2EeTagSize);
         if (chunkSize - inputPos != OCC::CommonConstants::e2EeTagSize) {
-            qCritical(lcCse()) << "Decryption failed. E2EE tag is missing!";
+            qCritical(lcCse()) << "Decryption failed. e2EeTag is missing!";
             return -1;
         }
 
         int outLen = 0;
 
-        QByteArray tag = QByteArray(input + inputPos, OCC::CommonConstants::e2EeTagSize);
+        QByteArray e2EeTag = QByteArray(input + inputPos, OCC::CommonConstants::e2EeTagSize);
 
-        /* Set expected tag value. Works in OpenSSL 1.0.1d and later */
-        if(!EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, tag.size(), reinterpret_cast<unsigned char*>(tag.data()))) {
-            qCritical(lcCse()) << "Could not set expected tag";
+        /* Set expected e2EeTag value. Works in OpenSSL 1.0.1d and later */
+        if(!EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, e2EeTag.size(), reinterpret_cast<unsigned char*>(e2EeTag.data()))) {
+            qCritical(lcCse()) << "Could not set expected e2EeTag";
             return -1;
         }
 
@@ -1936,8 +1936,6 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
         _isFinished = true;
     }
-
-    // qCDebug(lcCse()) <<"Decrypting:" << _decryptedSoFar << "/" << _totalSize;
 
     if (isFinished()) {
         qCDebug(lcCse()) << "Decryption complete";

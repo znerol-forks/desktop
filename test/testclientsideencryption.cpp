@@ -138,13 +138,26 @@ private slots:
         QCOMPARE(data, originalData);
     }
 
+    void testStreamingDecryptor_data()
+    {
+        QTest::addColumn<int>("totalBytes");
+        QTest::addColumn<int>("bytesToRead");
+
+        QTest::newRow("data1") << 64  << 2;
+        QTest::newRow("data2") << 32  << 8;
+        QTest::newRow("data3") << 76  << 64;
+        QTest::newRow("data4") << 272 << 256;
+    }
+
     void testStreamingDecryptor()
     {
+        QFETCH(int, totalBytes);
+
         QTemporaryFile dummyInputFile;
 
         QVERIFY(dummyInputFile.open());
 
-        const auto dummyFileRandomContents = EncryptionHelper::generateRandom(272);
+        const auto dummyFileRandomContents = EncryptionHelper::generateRandom(totalBytes);
 
         QCOMPARE(dummyInputFile.write(dummyFileRandomContents), dummyFileRandomContents.size());
 
@@ -194,11 +207,11 @@ private slots:
 
         QByteArray pendingBytes;
 
-        const int randBytesMin = QRandomGenerator::global()->bounded(1, 10);
+        QFETCH(int, bytesToRead);
 
         while (dummyEncryptionOutputFile.pos() < dummyEncryptionOutputFile.size()) {
             const auto bytesRemaining = dummyEncryptionOutputFile.size() - dummyEncryptionOutputFile.pos();
-            auto toRead = bytesRemaining > randBytesMin ? QRandomGenerator::global()->bounded(randBytesMin, bytesRemaining) : bytesRemaining;
+            auto toRead = bytesRemaining > bytesToRead ? bytesToRead : bytesRemaining;
 
             if (dummyEncryptionOutputFile.pos() + toRead > dummyEncryptionOutputFile.size()) {
                 toRead = dummyEncryptionOutputFile.size() - dummyEncryptionOutputFile.pos();

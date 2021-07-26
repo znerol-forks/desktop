@@ -66,11 +66,10 @@ namespace EncryptionHelper {
     OWNCLOUDSYNC_EXPORT bool fileDecryption(const QByteArray &key, const QByteArray &iv,
                                QFile *input, QFile *output);
 
-    //
-    // Simple classes for safe (RAII) handling of OpenSSL
-    // data structures
-    //
-
+//
+// Simple classes for safe (RAII) handling of OpenSSL
+// data structures
+//
 class CipherCtx {
 public:
     CipherCtx() : _ctx(EVP_CIPHER_CTX_new())
