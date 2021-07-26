@@ -1807,30 +1807,34 @@ EncryptionHelper::StreamingDecryptor::StreamingDecryptor(const QByteArray &key, 
     }
 }
 
-qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, QIODevice *output, quint64 chunkSize)
+QByteArray EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, quint64 chunkSize)
 {
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+
     Q_ASSERT(isInitialized());
     if (!isInitialized()) {
         qCritical(lcCse()) << "Decryption failed. Decryptor is not initialized!";
-        return -1;
+        return QByteArray();
     }
 
-    Q_ASSERT(output && output->isOpen() && output->isWritable());
-    if (!output || !output->isOpen() || !output->isWritable()) {
+    Q_ASSERT(buffer.isOpen() && buffer.isWritable());
+    if (!buffer.isOpen() || !buffer.isWritable()) {
         qCritical(lcCse()) << "Decryption failed. Incorrect output device!";
-        return -1;
+        return QByteArray();
     }
 
     Q_ASSERT(input);
     if (!input) {
         qCritical(lcCse()) << "Decryption failed. Incorrect input!";
-        return -1;
+        return QByteArray();
     }
 
     Q_ASSERT(chunkSize > 0);
     if (chunkSize <= 0) {
         qCritical(lcCse()) << "Decryption failed. Incorrect chunkSize!";
-        return -1;
+        return QByteArray();
     }
 
     if (_decryptedSoFar == 0) {
@@ -1840,13 +1844,13 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     Q_ASSERT(_decryptedSoFar + chunkSize <= _totalSize);
     if (_decryptedSoFar + chunkSize > _totalSize) {
         qCritical(lcCse()) << "Decryption failed. Chunk is out of range!";
-        return -1;
+        return QByteArray();
     }
 
     Q_ASSERT(_decryptedSoFar + chunkSize < OCC::CommonConstants::e2EeTagSize || _totalSize - OCC::CommonConstants::e2EeTagSize >= _decryptedSoFar + chunkSize - OCC::CommonConstants::e2EeTagSize);
     if (_decryptedSoFar + chunkSize > OCC::CommonConstants::e2EeTagSize && _totalSize - OCC::CommonConstants::e2EeTagSize < _decryptedSoFar + chunkSize - OCC::CommonConstants::e2EeTagSize) {
         qCritical(lcCse()) << "Decryption failed. Incorrect chunk!";
-        return -1;
+        return QByteArray();
     }
 
     const bool isLastChunk = _decryptedSoFar + chunkSize == _totalSize;
@@ -1858,7 +1862,7 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
     Q_ASSERT(size > 0 || chunkSize == OCC::CommonConstants::e2EeTagSize);
     if (size <= 0 && chunkSize != OCC::CommonConstants::e2EeTagSize) {
         qCritical(lcCse()) << "Decryption failed. Invalid input size: " << size << " !";
-        return -1;
+        return QByteArray();
     }
 
     qint64 bytesWritten = 0;
@@ -1872,22 +1876,22 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
 
         if (encryptedBlock.size() == 0) {
             qCritical(lcCse()) << "Could not read data from the input buffer.";
-            return -1;
+            return QByteArray();
         }
 
         int outLen = 0;
 
         if(!EVP_DecryptUpdate(_ctx, unsignedData(decryptedBlock), &outLen, reinterpret_cast<const unsigned char*>(encryptedBlock.data()), encryptedBlock.size())) {
             qCritical(lcCse()) << "Could not decrypt";
-            return -1;
+            return QByteArray();
         }
 
-        const auto writtenToOutput = output->write(decryptedBlock, outLen);
+        const auto writtenToOutput = buffer.write(decryptedBlock, outLen);
 
         Q_ASSERT(writtenToOutput == outLen);
         if (writtenToOutput != outLen) {
             qCritical(lcCse()) << "Failed to write decrypted data to device.";
-            return -1;
+            return QByteArray();
         }
 
         bytesWritten += writtenToOutput;
@@ -1904,7 +1908,7 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
         Q_ASSERT(chunkSize - inputPos == OCC::CommonConstants::e2EeTagSize);
         if (chunkSize - inputPos != OCC::CommonConstants::e2EeTagSize) {
             qCritical(lcCse()) << "Decryption failed. e2EeTag is missing!";
-            return -1;
+            return QByteArray();
         }
 
         int outLen = 0;
@@ -1914,20 +1918,20 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
         /* Set expected e2EeTag value. Works in OpenSSL 1.0.1d and later */
         if(!EVP_CIPHER_CTX_ctrl(_ctx, EVP_CTRL_GCM_SET_TAG, e2EeTag.size(), reinterpret_cast<unsigned char*>(e2EeTag.data()))) {
             qCritical(lcCse()) << "Could not set expected e2EeTag";
-            return -1;
+            return QByteArray();
         }
 
         if(1 != EVP_DecryptFinal_ex(_ctx, unsignedData(decryptedBlock), &outLen)) {
             qCritical(lcCse()) << "Could finalize decryption";
-            return -1;
+            return QByteArray();
         }
 
-        const auto writtenToOutput = output->write(decryptedBlock, outLen);
+        const auto writtenToOutput = buffer.write(decryptedBlock, outLen);
 
         Q_ASSERT(writtenToOutput == outLen);
         if (writtenToOutput != outLen) {
             qCritical(lcCse()) << "Failed to write decrypted data to device.";
-            return -1;
+            return QByteArray();
         }
 
         bytesWritten += writtenToOutput;
@@ -1941,7 +1945,7 @@ qint64 EncryptionHelper::StreamingDecryptor::chunkDecryption(const char *input, 
         qCDebug(lcCse()) << "Decryption complete";
     }
 
-    return bytesWritten;
+    return byteArray;
 }
 
 bool EncryptionHelper::StreamingDecryptor::isInitialized() const

@@ -226,15 +226,19 @@ private slots:
                 continue;
             }
 
-            const auto decryptedBytes = streamingDecryptor.chunkDecryption(dummyEncryptionOutputFile.read(toRead).constData(), &chunkedOutputDecrypted, toRead);
-            QVERIFY(decryptedBytes != -1);
-            QVERIFY(decryptedBytes == toRead || streamingDecryptor.isFinished() || !pendingBytes.isEmpty());
+            const auto decryptedChunk = streamingDecryptor.chunkDecryption(dummyEncryptionOutputFile.read(toRead).constData(), toRead);
+
+            QVERIFY(decryptedChunk.size() == toRead || streamingDecryptor.isFinished() || !pendingBytes.isEmpty());
+
+            chunkedOutputDecrypted.write(decryptedChunk);
         }
 
         if (!pendingBytes.isEmpty()) {
-            const auto decryptedBytes = streamingDecryptor.chunkDecryption(pendingBytes.constData(), &chunkedOutputDecrypted, pendingBytes.size());
-            QVERIFY(decryptedBytes != -1);
-            QVERIFY(decryptedBytes == pendingBytes.size() || streamingDecryptor.isFinished());
+            const auto decryptedChunk = streamingDecryptor.chunkDecryption(pendingBytes.constData(), pendingBytes.size());
+
+            QVERIFY(decryptedChunk.size() == pendingBytes.size() || streamingDecryptor.isFinished());
+
+            chunkedOutputDecrypted.write(decryptedChunk);
         }
 
         chunkedOutputDecrypted.close();

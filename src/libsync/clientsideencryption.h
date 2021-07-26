@@ -97,7 +97,7 @@ public:
     StreamingDecryptor(const QByteArray &key, const QByteArray &iv, quint64 totalSize);
     ~StreamingDecryptor() = default;
 
-    qint64 chunkDecryption(const char *input, QIODevice *output, quint64 chunkSize);
+    QByteArray chunkDecryption(const char *input, quint64 chunkSize);
 
     bool isInitialized() const;
     bool isFinished() const;
