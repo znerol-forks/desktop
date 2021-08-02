@@ -84,8 +84,8 @@ Account::~Account() = default;
 
 QString Account::davPath() const
 {
-    const auto davPathBase = QLatin1String("/remote.php/dav/files/");
-    const auto davPathFinal = !davUser().isEmpty() ? QString(davPathBase + davUser()) + QLatin1Char('/') : QString(davPathBase);
+    const QString davPathBase("/remote.php/dav/files/");
+    const QString davPathFinal = !davUser().isEmpty() ? davPathBase + davUser() + QLatin1Char('/') : davPathBase;
     return davPathFinal;
 }
 

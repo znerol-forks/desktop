@@ -348,10 +348,10 @@ int main(int argc, char **argv)
         options.target_url.append(account->davPath());
     }
 
-    QUrl url = QUrl::fromUserInput(options.target_url);
+    QUrl baseUrl = QUrl::fromUserInput(options.target_url);
 
     // take only the base URL (without the path)
-    url = url.toString().remove(url.path());
+    baseUrl = baseUrl.toString().remove(baseUrl.path());
 
     // Order of retrieval attempt (later attempts override earlier ones):
     // 1. From URL
@@ -359,8 +359,8 @@ int main(int argc, char **argv)
     // 3. From netrc (if enabled)
     // 4. From prompt (if interactive)
 
-    QString user = url.userName();
-    QString password = url.password();
+    QString user = baseUrl.userName();
+    QString password = baseUrl.password();
 
     if (!options.user.isEmpty()) {
         user = options.user;
@@ -373,7 +373,7 @@ int main(int argc, char **argv)
     if (options.useNetrc) {
         NetrcParser parser;
         if (parser.parse()) {
-            NetrcParser::LoginPair pair = parser.find(url.host());
+            NetrcParser::LoginPair pair = parser.find(baseUrl.host());
             user = pair.first;
             password = pair.second;
         }
@@ -393,18 +393,18 @@ int main(int argc, char **argv)
 
     // Find the folder and the original owncloud url
 
-    url.setScheme(url.scheme().replace("owncloud", "http"));
+    baseUrl.setScheme(baseUrl.scheme().replace("owncloud", "http"));
 
-    QUrl credentialFreeUrl = url;
+    QUrl credentialFreeUrl = baseUrl;
     credentialFreeUrl.setUserName(QString());
     credentialFreeUrl.setPassword(QString());
 
-    const auto urlWithoutTrailingSlash = options.target_url.endsWith('/') ? options.target_url.chopped(1) : options.target_url;
+    const auto urlWithoutTrailingSlash = options.target_url.endsWith(QLatin1Char('/')) ? options.target_url.chopped(1) : options.target_url;
 
-    const auto urlSplitted = urlWithoutTrailingSlash.split('/', QString::SplitBehavior::SkipEmptyParts);
+    const auto urlSplitted = urlWithoutTrailingSlash.split(QLatin1Char('/'), QString::SplitBehavior::SkipEmptyParts);
 
     // Remote folders typically start with a / and don't end with one
-    const auto folder = urlSplitted.size() > 1 ? QString("/" + urlSplitted.last()) : QLatin1String("/");
+    const QString folder = urlSplitted.size() > 1 ? QStringLiteral("/") + urlSplitted.last() : QStringLiteral("/");
 
     if (!options.proxy.isNull()) {
         QString host;
@@ -441,8 +441,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    const auto UrlString = url.toString();
-    account->setUrl(url);
+    account->setUrl(baseUrl);
     account->setSslErrorHandler(sslErrorHandler);
 
     QEventLoop loop;
