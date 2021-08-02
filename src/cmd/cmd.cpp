@@ -350,6 +350,9 @@ int main(int argc, char **argv)
 
     QUrl url = QUrl::fromUserInput(options.target_url);
 
+    // take only the base URL (without the path)
+    url = url.toString().remove(url.path());
+
     // Order of retrieval attempt (later attempts override earlier ones):
     // 1. From URL
     // 2. From options
@@ -388,12 +391,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // take the unmodified url to pass to csync_create()
-    QByteArray remUrl = options.target_url.toUtf8();
-
     // Find the folder and the original owncloud url
-    const QStringList splitted = url.path().split(account->davPath());
-    url.setPath(splitted.value(0));
 
     url.setScheme(url.scheme().replace("owncloud", "http"));
 
@@ -401,11 +399,12 @@ int main(int argc, char **argv)
     credentialFreeUrl.setUserName(QString());
     credentialFreeUrl.setPassword(QString());
 
+    const auto urlWithoutTrailingSlash = options.target_url.endsWith('/') ? options.target_url.chopped(1) : options.target_url;
+
+    const auto urlSplitted = urlWithoutTrailingSlash.split('/', QString::SplitBehavior::SkipEmptyParts);
+
     // Remote folders typically start with a / and don't end with one
-    QString folder = "/" + splitted.value(1);
-    if (folder.endsWith("/") && folder != "/") {
-        folder.chop(1);
-    }
+    const auto folder = urlSplitted.size() > 1 ? QString("/" + urlSplitted.last()) : QLatin1String("/");
 
     if (!options.proxy.isNull()) {
         QString host;
@@ -442,6 +441,7 @@ int main(int argc, char **argv)
     }
 #endif
 
+    const auto UrlString = url.toString();
     account->setUrl(url);
     account->setSslErrorHandler(sslErrorHandler);
 
