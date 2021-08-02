@@ -392,7 +392,7 @@ int main(int argc, char **argv)
     QByteArray remUrl = options.target_url.toUtf8();
 
     // Find the folder and the original owncloud url
-    QStringList splitted = url.path().split("/" + account->davPath());
+    const QStringList splitted = url.path().split(account->davPath());
     url.setPath(splitted.value(0));
 
     url.setScheme(url.scheme().replace("owncloud", "http"));

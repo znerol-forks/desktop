@@ -84,7 +84,9 @@ Account::~Account() = default;
 
 QString Account::davPath() const
 {
-    return QLatin1String("/remote.php/dav/files/") + davUser() + QLatin1Char('/');
+    const auto davPathBase = QLatin1String("/remote.php/dav/files/");
+    const auto davPathFinal = !davUser().isEmpty() ? QString(davPathBase + davUser()) + QLatin1Char('/') : QString(davPathBase);
+    return davPathFinal;
 }
 
 void Account::setSharedThis(AccountPtr sharedThis)
