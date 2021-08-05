@@ -65,6 +65,9 @@
 
     <!-- Quit / restart application -->
     <util:RestartResource ProcessName="$(var.AppExe)" />
+	
+	<!-- Quit / restart explorer -->
+    <util:RestartResource ProcessName="explorer.exe"/>
 
     <!-- Helper DLL Custom Actions -->
     <SetProperty Id="ExecNsisUninstaller" Value="&quot;$(var.AppShortName)&quot; &quot;[NSIS_UNINSTALLEXE]&quot;" Before="ExecNsisUninstaller" Sequence="execute" />
