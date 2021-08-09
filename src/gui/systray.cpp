@@ -19,6 +19,7 @@
 #include "common/utility.h"
 #include "tray/UserModel.h"
 #include "configfile.h"
+#include "userstatusdialog.h"
 
 #include <QCursor>
 #include <QGuiApplication>

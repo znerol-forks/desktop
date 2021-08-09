@@ -26,6 +26,8 @@
 #include "theme.h"
 #include "common/utility.h"
 #include "cocoainitializer.h"
+#include "userstatusdialogmodel.h"
+#include "userstatusdialog.h"
 #include "emojimodel.h"
 
 #if defined(BUILD_UPDATER)
@@ -71,8 +73,13 @@ int main(int argc, char **argv)
 #endif
     OCC::Application app(argc, argv);
 
-    qmlRegisterSingletonType<OCC::EmojiModel>("com.nextcloud.desktopclient", 1, 0, "EmojiModel", OCC::EmojiModel::singletonProvider);
-    // qmlRegisterType<OCC::EmojiModel>("com.nextcloud.desktopclient", 1, 0, "EmojiModel");
+    qmlRegisterSingletonType<OCC::EmojiModel>("com.nextcloud.desktopclient", 1, 0,
+        "EmojiModel", OCC::EmojiModel::singletonProvider);
+    qmlRegisterType<UserStatusDialogModel>("com.nextcloud.desktopclient", 1, 0,
+        "UserStatusDialogModel");
+    qmlRegisterUncreatableType<OCC::UserStatus>("com.nextcloud.desktopclient", 1, 0, "UserStatus",
+        "Access to Status enum");
+    qRegisterMetaType<OCC::UserStatus>("UserStatus");
     qRegisterMetaTypeStreamOperators<Emoji>();
 
 #ifdef Q_OS_WIN

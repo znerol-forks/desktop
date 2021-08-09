@@ -12,16 +12,14 @@
  * for more details.
  */
 
-#include "userstatus.h"
 #include "userstatusjob.h"
 #include "userstatusdialogmodel.h"
 
 #include <QTest>
 #include <QSignalSpy>
+#include <QDateTime>
 
 #include <memory>
-#include <qdatetime.h>
-#include <qsignalspy.h>
 
 class FakeUserStatusJob : public OCC::UserStatusJob
 {

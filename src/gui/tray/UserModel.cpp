@@ -11,7 +11,10 @@
 #include "logger.h"
 #include "guiutility.h"
 #include "syncfileitem.h"
+#include "tray/ActivityListModel.h"
 #include "tray/NotificationCache.h"
+#include "userstatusdialog.h"
+#include "userstatusjob.h"
 
 #include <QDesktopServices>
 #include <QIcon>
@@ -920,6 +923,15 @@ Q_INVOKABLE void UserModel::removeAccount(const int &id)
     beginRemoveRows(QModelIndex(), id, id);
     _users.removeAt(id);
     endRemoveRows();
+}
+
+QQuickWindow *UserModel::createSetUserStatusDialog(const int &id)
+{
+    if (id < 0 || id >= _users.size()) {
+        return {};
+    }
+
+    return UserStatusDialog::create(_users[id]->account());
 }
 
 int UserModel::rowCount(const QModelIndex &parent) const
