@@ -9,9 +9,10 @@ ColumnLayout {
     id: rootLayout
     anchors.fill: parent
     spacing: 0
-    Layout.margins: 0
-
     property NC.UserStatusDialogModel userStatusDialogModel
+
+    implicitWidth: 450
+    implicitHeight: 600
 
     Connections {
         target: userStatusDialogModel
@@ -21,18 +22,15 @@ ColumnLayout {
     }
 
     Text {
-        Layout.margins: 0
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.margins: 8
+        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
         font.bold: true
         text: qsTr("Online status")
     }
         
     GridLayout {
-        Layout.leftMargin: 8
-        Layout.rightMargin: 8
-        Layout.topMargin: 0
-        Layout.bottomMargin: 0
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.margins: 8
+        Layout.alignment: Qt.AlignTop
         columns: 2
         rows: 2
         columnSpacing: 8
@@ -77,15 +75,15 @@ ColumnLayout {
     }
 
     Text {
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-        padding: 6
+        Layout.margins: 8
+        Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
         font.bold: true
         text: qsTr("Status message")
     }
 
     RowLayout {
         Layout.margins: 8
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.alignment: Qt.AlignTop
         Layout.fillWidth: true
 
         Button {
@@ -120,7 +118,7 @@ ColumnLayout {
 
     ColumnLayout {
         Layout.margins: 8
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.alignment: Qt.AlignTop
 
         Repeater {
             model: userStatusDialogModel.predefinedStatusesCount
@@ -138,10 +136,9 @@ ColumnLayout {
 
    RowLayout {
        Layout.margins: 8
-       Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+       Layout.alignment: Qt.AlignTop
 
        Text {
-           Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
            text: qsTr("Clear status message after")
        }
 
@@ -155,7 +152,7 @@ ColumnLayout {
 
     RowLayout {
         Layout.margins: 8
-        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.alignment: Qt.AlignTop
         
         Button {
             Layout.fillWidth: true

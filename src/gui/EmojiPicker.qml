@@ -60,7 +60,7 @@ ColumnLayout {
                 width: parent.width
                 height: 2
 
-                visible: category === emojiCategory
+                visible: ListView.isCurrentItem
 
                 color: "grey"
             }
@@ -110,7 +110,7 @@ ColumnLayout {
             case "flags":
                 return NC.EmojiModel.flags
             }
-            return NC.EmojiModel.history
+            return null
         }
 
         delegate: ItemDelegate {

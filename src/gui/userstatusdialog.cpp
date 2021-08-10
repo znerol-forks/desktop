@@ -47,16 +47,17 @@ namespace UserStatusDialog {
     {
         const auto userStatusDialogModel = new UserStatusDialogModel(account->userStatusJob());
         const auto view = new QQuickView;
-        const auto width = 500;
-        const auto height = 700;
+        const auto width = 450;
+        const auto height = 600;
         view->setMaximumWidth(width);
         view->setMaximumHeight(height);
         view->setMinimumWidth(width);
         view->setMinimumHeight(height);
         QObject::connect(userStatusDialogModel, &UserStatusDialogModel::finished, view, [view]() {
             view->close();
+            view->deleteLater();
         });
-        view->engine()->setObjectOwnership(view, QQmlEngine::JavaScriptOwnership);
+        view->engine()->setObjectOwnership(view, QQmlEngine::CppOwnership);
         view->engine()->setObjectOwnership(userStatusDialogModel, QQmlEngine::JavaScriptOwnership);
 
         view->setInitialProperties({ { "userStatusDialogModel", QVariant::fromValue(userStatusDialogModel) } });
