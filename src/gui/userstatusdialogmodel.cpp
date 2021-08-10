@@ -16,6 +16,7 @@
 
 #include <jsonuserstatusjob.h>
 #include <userstatusjob.h>
+#include <theme.h>
 
 #include <QDateTime>
 #include <QLoggingCategory>
@@ -153,6 +154,24 @@ void UserStatusDialogModel::setOnlineStatus(UserStatus::OnlineStatus status)
 
     _userStatus.setState(status);
     emit onlineStatusChanged();
+}
+
+QUrl UserStatusDialogModel::onlineIcon() const
+{
+    return Theme::instance()->statusOnlineImageSource();
+}
+
+QUrl UserStatusDialogModel::awayIcon() const
+{
+    return Theme::instance()->statusAwayImageSource();
+}
+QUrl UserStatusDialogModel::dndIcon() const
+{
+    return Theme::instance()->statusDoNotDisturbImageSource();
+}
+QUrl UserStatusDialogModel::invisibleIcon() const
+{
+    return Theme::instance()->statusInvisibleImageSource();
 }
 
 UserStatus::OnlineStatus UserStatusDialogModel::onlineStatus() const

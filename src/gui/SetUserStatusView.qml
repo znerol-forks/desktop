@@ -42,6 +42,8 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: NC.UserStatus.Online == userStatusDialogModel.onlineStatus
             checkable: true
+            icon.source: userStatusDialogModel.onlineIcon
+            icon.color: "transparent"
             text: qsTr("Online")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Online)
         }
@@ -49,6 +51,8 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: NC.UserStatus.Away == userStatusDialogModel.onlineStatus
             checkable: true
+            icon.source: userStatusDialogModel.awayIcon
+            icon.color: "transparent"
             text: qsTr("Away")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Away)
         }
@@ -56,6 +60,8 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: NC.UserStatus.DoNotDisturb == userStatusDialogModel.onlineStatus
             checkable: true
+            icon.source: userStatusDialogModel.dndIcon
+            icon.color: "transparent"
             text: qsTr("Do not disturb")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.DoNotDisturb)
         }
@@ -63,6 +69,8 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: NC.UserStatus.Invisible == userStatusDialogModel.onlineStatus
             checkable: true
+            icon.source: userStatusDialogModel.invisibleIcon
+            icon.color: "transparent"
             text: qsTr("Invisible")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Invisible)
         }
@@ -118,12 +126,15 @@ ColumnLayout {
             model: userStatusDialogModel.predefinedStatusesCount
 
             Button {
+                id: control
                 Layout.fillWidth: true
+                flat: !hovered
+                hoverEnabled: true
                 text: userStatusDialogModel.predefinedStatus(index).icon + " <b>" + userStatusDialogModel.predefinedStatus(index).message + "</b> - " + userStatusDialogModel.predefinedStatusClearAt(index)
                 onClicked: userStatusDialogModel.setPredefinedStatus(index)
             }
         }
-   }
+    }
 
    RowLayout {
        Layout.margins: 8
@@ -152,6 +163,7 @@ ColumnLayout {
             onClicked: userStatusDialogModel.clearUserStatus()
         }
         Button {
+            highlighted: true
             Layout.fillWidth: true
             text: qsTr("Set status message")
             onClicked: userStatusDialogModel.setUserStatus()

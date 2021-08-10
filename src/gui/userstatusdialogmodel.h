@@ -40,6 +40,10 @@ class UserStatusDialogModel : public QObject
     Q_PROPERTY(QStringList clearAtStages READ clearAtStages CONSTANT)
     Q_PROPERTY(QString clearAt READ clearAt NOTIFY clearAtChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QUrl onlineIcon READ onlineIcon CONSTANT)
+    Q_PROPERTY(QUrl awayIcon READ awayIcon CONSTANT)
+    Q_PROPERTY(QUrl dndIcon READ dndIcon CONSTANT)
+    Q_PROPERTY(QUrl invisibleIcon READ invisibleIcon CONSTANT)
 
 public:
     explicit UserStatusDialogModel(QObject *parent = nullptr);
@@ -62,6 +66,12 @@ public:
 
     UserStatus::OnlineStatus onlineStatus() const;
     Q_INVOKABLE void setOnlineStatus(OCC::UserStatus::OnlineStatus status);
+
+    QUrl onlineIcon() const;
+    QUrl awayIcon() const;
+    QUrl dndIcon() const;
+    QUrl invisibleIcon() const;
+
     QString userStatusMessage() const;
     Q_INVOKABLE void setUserStatusMessage(const QString &message);
     void setUserStatusEmoji(const QString &emoji);

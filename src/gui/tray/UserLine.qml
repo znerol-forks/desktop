@@ -189,6 +189,32 @@ MenuItem {
                 }
 
                 MenuItem {
+                    id: setUserStatus
+
+                    property var setUserStatusWindow
+                    
+                    text: qsTr("Set status")
+                    font.pixelSize: Style.topLinePixelSize
+                    hoverEnabled: true
+                    onClicked: {
+                        setUserStatusWindow = UserModel.createSetUserStatusDialog(index)
+                        setUserStatusWindow.show()
+                        accountMenu.close()
+                    }
+
+                    background: Item {
+                        height: parent.height
+                        width: parent.menu.width
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            color: parent.parent.hovered ? Style.lightHover : "transparent"
+                        }
+                    }
+                    
+                }
+
+                MenuItem {
                     text: model.isConnected ? qsTr("Log out") : qsTr("Log in")
                     font.pixelSize: Style.topLinePixelSize
                     hoverEnabled: true
@@ -244,32 +270,6 @@ MenuItem {
                     Accessible.name: text
                     Accessible.onPressAction: removeAccountButton.clicked()
                 }
-                MenuItem {
-                    id: setUserStatus
-
-                    property var setUserStatusWindow
-                    
-                    text: qsTr("Set user status")
-                    font.pixelSize: Style.topLinePixelSize
-                    hoverEnabled: true
-                    onClicked: {
-                        setUserStatusWindow = UserModel.createSetUserStatusDialog(index)
-                        setUserStatusWindow.show()
-                        accountMenu.close()
-                    }
-
-                    background: Item {
-                        height: parent.height
-                        width: parent.menu.width
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 1
-                            color: parent.parent.hovered ? Style.lightHover : "transparent"
-                        }
-                    }
-                    
-                }
-                
             }
         }
     }
