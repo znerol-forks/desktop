@@ -64,32 +64,32 @@ public:
 
     ~UserStatusDialogModel();
 
-    UserStatus::OnlineStatus onlineStatus() const;
+    Q_REQUIRED_RESULT UserStatus::OnlineStatus onlineStatus() const;
     Q_INVOKABLE void setOnlineStatus(OCC::UserStatus::OnlineStatus status);
 
-    QUrl onlineIcon() const;
-    QUrl awayIcon() const;
-    QUrl dndIcon() const;
-    QUrl invisibleIcon() const;
+    Q_REQUIRED_RESULT QUrl onlineIcon() const;
+    Q_REQUIRED_RESULT QUrl awayIcon() const;
+    Q_REQUIRED_RESULT QUrl dndIcon() const;
+    Q_REQUIRED_RESULT QUrl invisibleIcon() const;
 
-    QString userStatusMessage() const;
+    Q_REQUIRED_RESULT QString userStatusMessage() const;
     Q_INVOKABLE void setUserStatusMessage(const QString &message);
     void setUserStatusEmoji(const QString &emoji);
-    QString userStatusEmoji() const;
+    Q_REQUIRED_RESULT QString userStatusEmoji() const;
 
     Q_INVOKABLE void setUserStatus();
     Q_INVOKABLE void clearUserStatus();
 
-    int predefinedStatusesCount() const;
+    Q_REQUIRED_RESULT int predefinedStatusesCount() const;
     Q_INVOKABLE UserStatus predefinedStatus(int index) const;
     Q_INVOKABLE QString predefinedStatusClearAt(int index) const;
     Q_INVOKABLE void setPredefinedStatus(int index);
 
-    QStringList clearAtStages() const;
-    QString clearAt() const;
+    Q_REQUIRED_RESULT QStringList clearAtStages() const;
+    Q_REQUIRED_RESULT QString clearAt() const;
     Q_INVOKABLE void setClearAt(int index);
 
-    QString errorMessage() const;
+    Q_REQUIRED_RESULT QString errorMessage() const;
 
 signals:
     void showError();
@@ -117,10 +117,10 @@ private:
     void onMessageCleared();
     void onError(UserStatusJob::Error error);
 
-    QString clearAtStageToString(ClearStageType stage) const;
-    QString clearAtReadable(const Optional<ClearAt> &clearAt) const;
-    QString timeDifferenceToString(int differenceSecs) const;
-    Optional<ClearAt> clearStageTypeToDateTime(ClearStageType type);
+    Q_REQUIRED_RESULT QString clearAtStageToString(ClearStageType stage) const;
+    Q_REQUIRED_RESULT QString clearAtReadable(const Optional<ClearAt> &clearAt) const;
+    Q_REQUIRED_RESULT QString timeDifferenceToString(int differenceSecs) const;
+    Q_REQUIRED_RESULT Optional<ClearAt> clearStageTypeToDateTime(ClearStageType type) const;
     void setError(const QString &reason);
 
     std::shared_ptr<UserStatusJob> _userStatusJob {};

@@ -221,7 +221,7 @@ void UserStatusDialogModel::onUserStatusFetched(const UserStatus &userStatus)
     emit clearAtChanged();
 }
 
-Optional<ClearAt> UserStatusDialogModel::clearStageTypeToDateTime(ClearStageType type)
+Optional<ClearAt> UserStatusDialogModel::clearStageTypeToDateTime(ClearStageType type) const
 {
     switch (type) {
     case ClearStageType::DontClear:

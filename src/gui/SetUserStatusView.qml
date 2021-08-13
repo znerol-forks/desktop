@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) by Felix Weilbach <felix.weilbach@nextcloud.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ */
+
 import QtQuick 2.6
 import QtQuick.Dialogs 1.3
 import QtQuick.Layouts 1.15
@@ -44,6 +58,7 @@ ColumnLayout {
             icon.color: "transparent"
             text: qsTr("Online")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Online)
+            implicitWidth: 100
         }
         Button {
             Layout.fillWidth: true
@@ -53,6 +68,8 @@ ColumnLayout {
             icon.color: "transparent"
             text: qsTr("Away")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Away)
+            implicitWidth: 100
+            
         }
         Button {
             Layout.fillWidth: true
@@ -62,6 +79,7 @@ ColumnLayout {
             icon.color: "transparent"
             text: qsTr("Do not disturb")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.DoNotDisturb)
+            implicitWidth: 100
         }
         Button {
             Layout.fillWidth: true
@@ -71,6 +89,7 @@ ColumnLayout {
             icon.color: "transparent"
             text: qsTr("Invisible")
             onClicked: userStatusDialogModel.setOnlineStatus(NC.UserStatus.Invisible)
+            implicitWidth: 100
         }
     }
 
