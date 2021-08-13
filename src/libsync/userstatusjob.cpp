@@ -112,10 +112,10 @@ void UserStatus::setClearAt(const Optional<ClearAt> &dateTime)
 }
 
 
-UserStatusJob::UserStatusJob(QObject *parent)
+UserStatusConnector::UserStatusConnector(QObject *parent)
     : QObject(parent)
 {
 }
 
-UserStatusJob::~UserStatusJob() = default;
+UserStatusConnector::~UserStatusConnector() = default;
 }

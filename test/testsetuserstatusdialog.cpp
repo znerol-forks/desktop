@@ -21,7 +21,7 @@
 
 #include <memory>
 
-class FakeUserStatusJob : public OCC::UserStatusJob
+class FakeUserStatusJob : public OCC::UserStatusConnector
 {
 public:
     void fetchUserStatus() override
@@ -56,7 +56,7 @@ public:
         }
 
         _userStatusSet = userStatus;
-        emit UserStatusJob::userStatusSet();
+        emit UserStatusConnector::userStatusSet();
     }
 
     void clearMessage() override

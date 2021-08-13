@@ -96,7 +96,7 @@ private:
     Optional<ClearAt> _clearAt;
 };
 
-class OWNCLOUDSYNC_EXPORT UserStatusJob : public QObject
+class OWNCLOUDSYNC_EXPORT UserStatusConnector : public QObject
 {
     Q_OBJECT
 
@@ -110,9 +110,9 @@ public:
         CouldNotClearMessage
     };
 
-    explicit UserStatusJob(QObject *parent = nullptr);
+    explicit UserStatusConnector(QObject *parent = nullptr);
 
-    virtual ~UserStatusJob();
+    virtual ~UserStatusConnector();
 
     virtual void fetchUserStatus() = 0;
 

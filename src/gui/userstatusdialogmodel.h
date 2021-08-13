@@ -48,10 +48,10 @@ class UserStatusDialogModel : public QObject
 public:
     explicit UserStatusDialogModel(QObject *parent = nullptr);
 
-    explicit UserStatusDialogModel(std::shared_ptr<UserStatusJob> userStatusJob,
+    explicit UserStatusDialogModel(std::shared_ptr<UserStatusConnector> userStatusJob,
         QObject *parent = nullptr);
 
-    explicit UserStatusDialogModel(std::shared_ptr<UserStatusJob> userStatusJob,
+    explicit UserStatusDialogModel(std::shared_ptr<UserStatusConnector> userStatusJob,
         std::unique_ptr<DateTimeProvider> dateTimeProvider,
         QObject *parent = nullptr);
 
@@ -115,7 +115,7 @@ private:
     void onPredefinedStatusesFetched(const std::vector<UserStatus> &statuses);
     void onUserStatusSet();
     void onMessageCleared();
-    void onError(UserStatusJob::Error error);
+    void onError(UserStatusConnector::Error error);
 
     Q_REQUIRED_RESULT QString clearAtStageToString(ClearStageType stage) const;
     Q_REQUIRED_RESULT QString clearAtReadable(const Optional<ClearAt> &clearAt) const;
@@ -123,7 +123,7 @@ private:
     Q_REQUIRED_RESULT Optional<ClearAt> clearStageTypeToDateTime(ClearStageType type) const;
     void setError(const QString &reason);
 
-    std::shared_ptr<UserStatusJob> _userStatusJob {};
+    std::shared_ptr<UserStatusConnector> _userStatusJob {};
     std::vector<UserStatus> _predefinedStatuses;
     UserStatus _userStatus;
     std::unique_ptr<DateTimeProvider> _dateTimeProvider;

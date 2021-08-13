@@ -35,7 +35,7 @@ UserStatusDialogModel::UserStatusDialogModel(QObject *parent)
 {
 }
 
-UserStatusDialogModel::UserStatusDialogModel(std::shared_ptr<UserStatusJob> userStatusJob,
+UserStatusDialogModel::UserStatusDialogModel(std::shared_ptr<UserStatusConnector> userStatusJob,
     QObject *parent)
     : QObject(parent)
     , _userStatusJob(std::move(userStatusJob))
@@ -46,7 +46,7 @@ UserStatusDialogModel::UserStatusDialogModel(std::shared_ptr<UserStatusJob> user
     init();
 }
 
-UserStatusDialogModel::UserStatusDialogModel(std::shared_ptr<UserStatusJob> userStatusJob,
+UserStatusDialogModel::UserStatusDialogModel(std::shared_ptr<UserStatusConnector> userStatusJob,
     std::unique_ptr<DateTimeProvider> dateTimeProvider,
     QObject *parent)
     : QObject(parent)
@@ -77,15 +77,15 @@ void UserStatusDialogModel::init()
         return;
     }
 
-    connect(_userStatusJob.get(), &UserStatusJob::userStatusFetched, this,
+    connect(_userStatusJob.get(), &UserStatusConnector::userStatusFetched, this,
         &UserStatusDialogModel::onUserStatusFetched);
-    connect(_userStatusJob.get(), &UserStatusJob::predefinedStatusesFetched, this,
+    connect(_userStatusJob.get(), &UserStatusConnector::predefinedStatusesFetched, this,
         &UserStatusDialogModel::onPredefinedStatusesFetched);
-    connect(_userStatusJob.get(), &UserStatusJob::userStatusSet, this,
+    connect(_userStatusJob.get(), &UserStatusConnector::userStatusSet, this,
         &UserStatusDialogModel::onUserStatusSet);
-    connect(_userStatusJob.get(), &UserStatusJob::messageCleared, this,
+    connect(_userStatusJob.get(), &UserStatusConnector::messageCleared, this,
         &UserStatusDialogModel::onMessageCleared);
-    connect(_userStatusJob.get(), &UserStatusJob::error, this,
+    connect(_userStatusJob.get(), &UserStatusConnector::error, this,
         &UserStatusDialogModel::onError);
 
     _userStatusJob->fetchUserStatus();
@@ -108,30 +108,30 @@ void UserStatusDialogModel::onMessageCleared()
     emit finished();
 }
 
-void UserStatusDialogModel::onError(UserStatusJob::Error error)
+void UserStatusDialogModel::onError(UserStatusConnector::Error error)
 {
     switch (error) {
-    case UserStatusJob::Error::CouldNotFetchPredefinedUserStatuses:
+    case UserStatusConnector::Error::CouldNotFetchPredefinedUserStatuses:
         setError(tr("Could not fetch predefined statuses. Make sure you are connected to the internet."));
         return;
 
-    case UserStatusJob::Error::CouldNotFetchUserStatus:
+    case UserStatusConnector::Error::CouldNotFetchUserStatus:
         setError(tr("Could not fetch user status. Make sure you are connected to the internet."));
         return;
 
-    case UserStatusJob::Error::UserStatusNotSupported:
+    case UserStatusConnector::Error::UserStatusNotSupported:
         setError(tr("User status feature is not supported on the server."));
         return;
 
-    case UserStatusJob::Error::EmojisNotSupported:
+    case UserStatusConnector::Error::EmojisNotSupported:
         setError(tr("Emojis feature is not supported on the server."));
         return;
 
-    case UserStatusJob::Error::CouldNotSetUserStatus:
+    case UserStatusConnector::Error::CouldNotSetUserStatus:
         setError(tr("Could not set user status. Make sure you are connected to the internet."));
         return;
 
-    case UserStatusJob::Error::CouldNotClearMessage:
+    case UserStatusConnector::Error::CouldNotClearMessage:
         setError(tr("Could not clear user status message. Make sure you are connected to the internet."));
         return;
     }

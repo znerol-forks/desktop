@@ -260,7 +260,7 @@ public:
     PushNotifications *pushNotifications() const;
     void setPushNotificationsReconnectInterval(int interval);
 
-    std::shared_ptr<UserStatusJob> userStatusJob() const;
+    std::shared_ptr<UserStatusConnector> userStatusJob() const;
 
 public slots:
     /// Used when forgetting credentials
@@ -350,7 +350,7 @@ private:
 
     PushNotifications *_pushNotifications = nullptr;
 
-    std::shared_ptr<UserStatusJob> _userStatusJob = nullptr;
+    std::shared_ptr<UserStatusConnector> _userStatusJob = nullptr;
 
     /* IMPORTANT - remove later - FIXME MS@2019-12-07 -->
      * TODO: For "Log out" & "Remove account": Remove client CA certs and KEY!
